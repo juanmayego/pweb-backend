@@ -75,7 +75,7 @@ public class VentasCabecera implements Serializable{
 		this.clientes = clientes;
 	}
 	
-	@OneToMany(fetch = FetchType.LAZY, mappedBy = "ventasCabecera", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "ventasCabecera", cascade = CascadeType.ALL, orphanRemoval = true)
 	public List<VentasDetalles> getVentasDetalles() {
 		return ventasDetalles;
 	}

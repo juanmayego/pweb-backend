@@ -53,7 +53,7 @@ public class VentasDetalles implements Serializable{
 		this.idVentasDetalle = idVentasDetalle;
 	}
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "id_ventas_cab", nullable = false)
 	@NotNull
 	public VentasCabecera getVentasCabecera() {

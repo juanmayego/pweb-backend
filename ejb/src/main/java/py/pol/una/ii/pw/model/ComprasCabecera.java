@@ -74,7 +74,7 @@ public class ComprasCabecera implements Serializable{
 		this.montoTotal = montoTotal;
 	}
 	
-	@OneToMany(fetch = FetchType.LAZY, mappedBy = "comprasCabecera", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "comprasCabecera", cascade = CascadeType.ALL, orphanRemoval = true)
 	public List<ComprasDetalles> getComprasDetalles() {
 		return comprasDetalles;
 	}

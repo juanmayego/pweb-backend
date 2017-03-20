@@ -1,6 +1,6 @@
 package py.pol.una.ii.pw.enums;
 
-public enum EstadoVenta {
+public enum EstadoCompra {
 	PENDIENTE,
 	CERRADO,
 	CANCELADO

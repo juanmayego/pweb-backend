@@ -49,7 +49,7 @@ public class ComprasDetalles implements Serializable{
 		this.idComprasDetalle = idComprasDetalle;
 	}
 	
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "id_compra_cab", nullable = false)
 	@NotNull
 	public ComprasCabecera getComprasCabecera() {
@@ -59,7 +59,7 @@ public class ComprasDetalles implements Serializable{
 		this.comprasCabecera = comprasCabecera;
 	}
 	
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "id_producto")
 	public Productos getProducto() {
 		return producto;

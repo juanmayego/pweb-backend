@@ -17,18 +17,14 @@
 package py.pol.una.ii.pw.service;
 
 import py.pol.una.ii.pw.model.Clientes;
-import py.pol.una.ii.pw.model.ComprasCabecera;
 import py.pol.una.ii.pw.model.Pagos;
-import py.pol.una.ii.pw.model.VentasCabecera;
 
 import javax.ejb.Stateless;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
 
 import java.util.Date;
-import java.util.List;
 import java.util.logging.Logger;
 
 // The @Stateless annotation eliminates the need for manual transaction demarcation
@@ -47,7 +43,7 @@ public class PagosRegistration {
     public void register(Pagos instance) throws Exception {
     	instance.setFechaCreacion(new Date());
     	instance.setFechaActualizacion(new Date());
-        //log.info("Registering " + instance.getFechaDocumento());
+        log.info("Registering nuevo pago");
         em.persist(instance);
         actualizarSaldoCliente(instance);
         pagosEventSrc.fire(instance);
