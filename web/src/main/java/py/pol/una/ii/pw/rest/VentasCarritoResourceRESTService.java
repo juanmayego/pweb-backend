@@ -21,10 +21,11 @@ import javax.ws.rs.core.Response;
 import javax.servlet.http.HttpServletRequest;
 
 import py.pol.una.ii.pw.model.Clientes;
+import py.pol.una.ii.pw.model.VentasCabecera;
 import py.pol.una.ii.pw.model.VentasDetalles;
 import py.pol.una.ii.pw.service.VentasCarritoRegistration;
 
-@Path("/cart")
+@Path("/ventas/carrito")
 @RequestScoped
 public class VentasCarritoResourceRESTService{
 	@Inject
@@ -66,7 +67,7 @@ public class VentasCarritoResourceRESTService{
 		try {
 			String respuesta = registration.register();
 			if(respuesta.equals("persisted")){
-				registration.finish();
+				//registration.finish();
 				builder = Response.ok();
 			}
 			if(respuesta.equals("noclient")){
@@ -100,9 +101,48 @@ public class VentasCarritoResourceRESTService{
 		}
 		return builder.build();
 	}
-
+	
+	
+	
 	@POST
-	@Path("/cliente/asignar")
+	@Path("/cancelar")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response cancel(@Context HttpServletRequest request){
+		Response.ResponseBuilder builder = null;
+		VentasCarritoRegistration registration = (VentasCarritoRegistration) 
+				request.getSession().getAttribute(CART_SESSION_KEY);
+		if(registration == null){
+			InitialContext ic;
+			try {
+				ic = new InitialContext();
+				registration = (VentasCarritoRegistration) 
+						ic.lookup("java:global/EjbJaxRS-ear/EjbJaxRS-ejb/VentasCarritoRegistration!py.pol.una.ii.pw.service.VentasCarritoRegistration");
+
+				request.getSession().setAttribute(
+						CART_SESSION_KEY, 
+						registration);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		
+		
+		try {
+			registration.cancelar();
+
+			builder = Response.ok();
+		} catch (Exception e) {
+
+			builder = Response.serverError();
+			e.printStackTrace();
+		}
+		return builder.build();
+	}
+	
+	@POST
+	@Path("/cliente")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response addCliente(@Context HttpServletRequest request, Clientes cliente){
@@ -132,7 +172,45 @@ public class VentasCarritoResourceRESTService{
 	}
 	
 	@POST
-	@Path("/detalle/agregar")
+	@Path("/")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response start(@Context HttpServletRequest request, VentasCabecera venta){
+		Response.ResponseBuilder builder = null;
+		VentasCarritoRegistration registration = (VentasCarritoRegistration) 
+				request.getSession().getAttribute(CART_SESSION_KEY);
+		if(registration == null){
+			InitialContext ic;
+			try {
+				ic = new InitialContext();
+				registration = (VentasCarritoRegistration) 
+						ic.lookup("java:global/EjbJaxRS-ear/EjbJaxRS-ejb/VentasCarritoRegistration!py.pol.una.ii.pw.service.VentasCarritoRegistration");
+
+				request.getSession().setAttribute(
+						CART_SESSION_KEY, 
+						registration);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		
+		
+		try {
+			registration.initVenta(venta);
+			builder = Response.ok();
+		} catch (Exception e) {
+
+			builder = Response.serverError();
+			e.printStackTrace();
+		}
+		return builder.build();
+	}
+	
+	
+	
+	@POST
+	@Path("/detalle")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response addProducto(@Context HttpServletRequest request,VentasDetalles detalle){
@@ -175,7 +253,6 @@ public class VentasCarritoResourceRESTService{
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateDetalle(@Context HttpServletRequest request,VentasDetalles detalle){
 		Response.ResponseBuilder builder = null;
-		
 		VentasCarritoRegistration registration = (VentasCarritoRegistration) 
 				request.getSession().getAttribute(CART_SESSION_KEY);
 		if(registration == null){

@@ -50,7 +50,7 @@ public class ComprasDetalles implements Serializable{
 	}
 	
 	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "id_compra_cab", nullable = false)
+	@JoinColumn(name = "id_compras_cab", nullable = false)
 	@NotNull
 	public ComprasCabecera getComprasCabecera() {
 		return comprasCabecera;

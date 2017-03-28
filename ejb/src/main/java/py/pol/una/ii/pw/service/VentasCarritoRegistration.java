@@ -7,11 +7,17 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.ejb.EJBContext;
 import javax.ejb.Remove;
 import javax.ejb.Stateful;
 import javax.ejb.StatefulTimeout;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.transaction.SystemException;
+import javax.transaction.UserTransaction;
 
 import py.pol.una.ii.pw.model.Clientes;
 import py.pol.una.ii.pw.model.Productos;
@@ -20,6 +26,7 @@ import py.pol.una.ii.pw.model.VentasDetalles;
 
 @Stateful
 @StatefulTimeout(unit=TimeUnit.MINUTES, value=30)
+@TransactionManagement(TransactionManagementType.BEAN)
 public class VentasCarritoRegistration {
 	
 	@Inject
@@ -27,6 +34,11 @@ public class VentasCarritoRegistration {
 
     @Inject
     private EntityManager em;
+    
+    @Resource
+    private EJBContext context;
+
+    private UserTransaction trx;
 
     private VentasCabecera instance;
     private List<VentasDetalles> detalles;
@@ -44,6 +56,18 @@ public class VentasCarritoRegistration {
     	instance = new VentasCabecera();
     	detalles = new ArrayList<VentasDetalles>();
     }
+    
+    public void initVenta(VentasCabecera venta) throws Exception{
+    	
+    	trx=context.getUserTransaction();
+    	instance = venta;
+    	instance.setFechaDocumento(new Date());
+    	instance.setFechaCreacion(new Date());
+    	instance.setFechaActualizacion(new Date());
+    	trx.begin();
+    	em.persist(instance);
+    }
+    
     public void agregarDetalleACarrito(VentasDetalles detalle){
     	detalle.setProducto(em.find(Productos.class, detalle.getProducto().getIdProducto()));
     	Boolean existe = false;
@@ -52,8 +76,9 @@ public class VentasCarritoRegistration {
     			existe = true;
     		}
     	}
-    	
     	if(!existe){
+    		detalle.setVentasCabecera(instance);
+    		em.persist(detalle);
     		detalles.add(detalle);
     	}
     }
@@ -83,16 +108,17 @@ public class VentasCarritoRegistration {
     	}
     }
     
-    public String register(){
+    @Remove
+    public String register() throws Exception{
     	Double sum = 0D;
     	
-    	if(cliente!=null)
+    	/*if(cliente!=null)
     		instance.setClientes(cliente);
     	else
     		return "noclient";
     	for(VentasDetalles det : detalles){
     		det.setVentasCabecera(instance);
-    	}
+    	}*/
     	instance.setEstado("PENDIENTE");
     	instance.setFechaDocumento(new Date());
     	if(detalles.isEmpty())
@@ -108,13 +134,18 @@ public class VentasCarritoRegistration {
     	instance.setFechaActualizacion(new Date());
         log.info("Registering nueva Venta");
         em.persist(instance);
+        trx.commit();
         //ventasEventSrc.fire(instance);
-        actualizarStock();
-        actualizarSaldoCliente();
+        //actualizarStock();
+        //actualizarSaldoCliente();
         return "persisted";
         
     }
     
+    
+    public void cancelar() throws Exception{
+    	trx.rollback();
+    }
     
     private void actualizarStock(){
     	for(VentasDetalles det : instance.getVentasDetalles()){
