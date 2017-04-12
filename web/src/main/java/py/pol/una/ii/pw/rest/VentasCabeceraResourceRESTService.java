@@ -16,6 +16,10 @@
  */
 package py.pol.una.ii.pw.rest;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,29 +28,24 @@ import java.util.logging.Logger;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
-import javax.persistence.TypedQuery;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.ValidationException;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.hibernate.validator.constraints.Email;
-
-import py.pol.una.ii.pw.data.ClientesRepository;
+import com.google.gson.Gson;
+import py.pol.una.ii.pw.data.VentasRepository;
 import py.pol.una.ii.pw.model.VentasCabecera;
 import py.pol.una.ii.pw.model.VentasDetalles;
+import py.pol.una.ii.pw.model.dto.VentasCabeceraDTO;
 import py.pol.una.ii.pw.service.VentasRegistration;
+
 
 /**
  * JAX-RS Example
@@ -61,30 +60,32 @@ public class VentasCabeceraResourceRESTService {
 	private Logger log;
 
 	@Inject
-	private ClientesRepository repository;
+	private VentasRepository repository;
 
 	@Inject
 	VentasRegistration registration;
-
-	/*
-	 * @GET
-	 * 
-	 * @Produces(MediaType.APPLICATION_JSON) public List<Clientes>
-	 * listAllClientes(
-	 * 
-	 * @QueryParam("nombre") String nombre) { return
-	 * repository.findAllOrderedByName(nombre); }
-	 * 
-	 * @GET
-	 * 
-	 * @Path("/{id:[0-9][0-9]*}")
-	 * 
-	 * @Produces(MediaType.APPLICATION_JSON) public Clientes
-	 * lookupMemberById(@PathParam("id") long id) { Clientes cliente =
-	 * repository.findById(id); if (cliente == null) { throw new
-	 * WebApplicationException(Response.Status.NOT_FOUND); } return cliente; }
-	 */
-
+	
+	@SuppressWarnings("resource")
+	@GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<VentasCabeceraDTO> listAllCompras(){
+    	try {
+    		List<VentasCabeceraDTO> resultados = new ArrayList<VentasCabeceraDTO>();
+			String ruta =  repository.findAllCabeceras();
+			Gson format = new Gson();
+			FileReader fr = new FileReader(ruta);
+		    BufferedReader br = new BufferedReader(fr);
+		    String linea;
+		    while((linea = br.readLine()) != null){
+		    	VentasCabeceraDTO compra = format.fromJson(linea, VentasCabeceraDTO.class);
+		    	resultados.add(compra);
+		    }
+		    return resultados;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+    }
 	/**
 	 * Creates a new member from the values provided. Performs validation, and
 	 * will return a JAX-RS response with either 200 ok, or with a map of
