@@ -13,8 +13,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
-@Entity
-@Table(name = "pagos")
 public class Pagos implements Serializable{
 
 	private static final long serialVersionUID = -816519122828875618L;
@@ -32,10 +30,6 @@ public class Pagos implements Serializable{
 		super();
 	}
 	
-	@Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pagos_id_pagos_seq")
-    @SequenceGenerator(name = "pagos_id_pagos_seq", initialValue = 1, allocationSize = 1, sequenceName = "pagos_id_pagos_seq")
-	@Column(name="id_pago")
 	public Long getIdPago() {
 		return idPago;
 	}
@@ -43,8 +37,6 @@ public class Pagos implements Serializable{
 		this.idPago = idPago;
 	}
 
-	@ManyToOne
-	@JoinColumn(name="id_cliente")
 	public Clientes getClientes() {
 		return clientes;
 	}
@@ -52,15 +44,12 @@ public class Pagos implements Serializable{
 		this.clientes = clientes;
 	}
 
-	@Column(name="fecha_pago")
 	public Date getFechaPago() {
 		return fechaPago;
 	}
 	public void setFechaPago(Date fechaPago) {
 		this.fechaPago = fechaPago;
 	}
-
-	@Column(name="monto")
 	public Double getMonto() {
 		return monto;
 	}
@@ -68,7 +57,6 @@ public class Pagos implements Serializable{
 		this.monto = monto;
 	}
 
-	@Column(name="fecha_creacion")
 	public Date getFechaCreacion() {
 		return fechaCreacion;
 	}
@@ -76,7 +64,6 @@ public class Pagos implements Serializable{
 		this.fechaCreacion = fechaCreacion;
 	}
 	
-	@Column(name="fecha_actualizacion")
 	public Date getFechaActualizacion() {
 		return fechaActualizacion;
 	}

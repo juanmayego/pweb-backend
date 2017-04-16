@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+   
+<mapper namespace="py.pol.una.ii.pw.mybatis.mappers.ProductosMapper">
+ 
+  	<select id="getProductoById" parameterType="int" resultMap="ProductosResult">
+	    select *
+		from productos
+		where id_producto = #{idProducto}
+	</select>
+  	<!-- Instead of referencing Fully Qualified Class Names we can register Aliases in mybatis-config.xml and use Alias names. -->
+	<resultMap type="py.pol.una.ii.pw.model.Proveedor" id="ProveedorResult2">
+	  <id property="idProveedor" column="id_proveedor"/>
+	  <result property="direccion" column="direccion"/>
+	  <result property="nombre" column="nombre"/>
+	  <result property="ruc" column="ruc"/>
+	  <result property="fechaActualizacion" column="fecha_actualizacion"/>
+	  <result property="fechaCreacion" column="fecha_creacion"/>   
+	</resultMap>
+	
+	
+	<resultMap type="py.pol.una.ii.pw.model.Productos" id="ProductosResult">
+	  <id property="idProducto" column="id_producto"/>
+	  <result property="descripcion" column="descripcion"/>
+	  <result property="precio" column="precio"/>
+	  <result property="cantidadDisponible" column="cantidad_disponible"/>
+	  <result property="fechaActualizacion" column="fecha_actualizacion"/>
+	  <result property="fechaCreacion" column="fecha_creacion"/>
+	  <association property="proveedor" resultMap="ProveedorResult2"/>     
+	</resultMap>
+   
+	<select id="getAllProductos" resultMap="ProductosResult">
+		SELECT * FROM productos order by descripcion
+	</select>
+	
+	<select id="filterProducto" resultMap="ProductosResult" parameterType="java.lang.String">
+		SELECT * FROM productos where descripcion like #{filter} order by descripcion
+	</select>
+   
+	<insert id="insertProductos" parameterType="py.pol.una.ii.pw.model.Productos" useGeneratedKeys="true" keyProperty="idProducto">
+	  insert into productos(id_producto, descripcion, precio, cantidad_disponible, fecha_creacion, fecha_actualizacion, id_proveedor)
+	  values (nextval('productos_id_productos_seq'), #{descripcion} , #{precio}, #{cantidadDisponible},
+	   #{fechaActualizacion}, #{fechaCreacion}, #{proveedor.idProveedor})
+	</insert>
+   
+	<!-- <update id="updateProveedor" parameterType="Proveedor">
+		UPDATE proveedor 
+		SET
+		 direccion= #{direccion},
+		 nombre = #{nombre},
+		 ruc = #{ruc},
+		 fecha_actualizacion = #{fechaActualizacion}
+		WHERE id_proveedor = #{idProveedor}
+	</update>
+   
+	<delete id="deleteProveedor" parameterType="int">
+		DELETE FROM proveedor WHERE id_proveedor = #{idProveedor}
+	</delete> -->
+</mapper>
+
+

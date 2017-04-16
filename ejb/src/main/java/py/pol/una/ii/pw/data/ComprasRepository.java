@@ -18,6 +18,8 @@ package py.pol.una.ii.pw.data;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.stream.JsonGenerator;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
@@ -29,11 +31,13 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.SimpleFormatter;
 
 import py.pol.una.ii.pw.model.ComprasCabecera;
 import py.pol.una.ii.pw.model.ComprasDetalles;
@@ -46,11 +50,15 @@ public class ComprasRepository {
     @Inject
     private EntityManager em;
 
-    private Integer limite = 10;
+    private Integer limite = 1000;
     public ComprasCabecera findById(Long id) {
         return em.find(ComprasCabecera.class, id);
     }
+    
+    
+    
     public String findAllCabeceras() throws IOException {
+    	
     	Gson gson = new GsonBuilder().create();
     	Long totalRegistros = obtenerCantidad();
     	SimpleDateFormat format = new SimpleDateFormat("ddMMyyyyhhmmss");
@@ -65,7 +73,7 @@ public class ComprasRepository {
     	
     	int i=0;
     	while(totalRegistros > i*limite){
-
+    			
     		Query tq = em.createNativeQuery("select ccab.id_compras_cab from compras_cabecera ccab order by ccab.id_compras_cab offset :desde limit :limite");
     		tq.setParameter("desde", i*limite);
     		tq.setParameter("limite", limite);
@@ -97,6 +105,52 @@ public class ComprasRepository {
         return ruta;
 
     }
+    
+    public void streamCompras(OutputStream stream){
+    	JsonGenerator generator = Json.createGenerator(stream);
+    	SimpleDateFormat f = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
+    	Long totalRegistros = obtenerCantidad();
+    	int i=0;
+    	generator
+        .writeStartArray();
+    	while(totalRegistros > i*limite){
+	    	Query tq = em.createNativeQuery("select ccab.id_compras_cab from compras_cabecera ccab order by ccab.id_compras_cab offset :desde limit :limite");
+			tq.setParameter("desde", i*limite);
+			tq.setParameter("limite", limite);
+			@SuppressWarnings("unchecked")
+			List<BigInteger> result = tq.getResultList();
+			for(BigInteger object : result){
+				Long id = object.longValue();
+				ComprasCabecera aux = em.find(ComprasCabecera.class,id);
+				generator.writeStartObject();
+					generator.write("idComprasCabecera", aux.getIdComprasCabecera());
+					generator.write("proveedor", aux.getProveedor().getNombre());
+					generator.write("montoTotal", aux.getMontoTotal());
+					generator.write("fechaDocumento", f.format(aux.getFechaDocumento()));
+					generator.write("fechaCreacion", f.format(aux.getFechaCreacion()));
+					generator.write("fechaActualizacion", f.format(aux.getFechaActualizacion()));
+					generator.writeStartArray("comprasDetalles");
+					for(ComprasDetallesDTO detalle : obtenerDetalle(aux)){
+						generator.writeStartObject();
+						generator.write("producto", detalle.getProducto().getDescripcion());
+						generator.write("cantidad", detalle.getCantidad());
+						generator.writeEnd();
+					}
+					generator.writeEnd();
+				generator.writeEnd();
+			}
+			
+			i++;
+			System.out.println(i*limite+" registros cargados");
+		}
+    	generator.writeEnd();
+    	generator.flush();
+    	generator.close();
+    	
+    }
+    
+    
+    
     
     
     public Long obtenerCantidad(){

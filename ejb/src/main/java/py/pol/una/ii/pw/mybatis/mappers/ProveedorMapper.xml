@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+   
+<mapper namespace="py.pol.una.ii.pw.mybatis.mappers.ProveedorMapper">
+ 
+  	<select id="getProveedorById" parameterType="java.lang.Long" resultType="py.pol.una.ii.pw.model.Proveedor">
+	    select id_proveedor as idProveedor,
+				 direccion,
+				 nombre,
+				 ruc,
+				 fecha_actualizacion as fechaActualizacion,
+				 fecha_creacion as fechaCreacion
+		from proveedor
+		where id_proveedor = #{idProveedor}
+	</select>
+  	<!-- Instead of referencing Fully Qualified Class Names we can register Aliases in mybatis-config.xml and use Alias names. -->
+	<resultMap type="py.pol.una.ii.pw.model.Proveedor" id="ProveedorResult">
+	  <id property="idProveedor" column="id_proveedor"/>
+	  <result property="direccion" column="direccion"/>
+	  <result property="nombre" column="nombre"/>
+	  <result property="ruc" column="ruc"/>
+	  <result property="fechaActualizacion" column="fecha_actualizacion"/>
+	  <result property="fechaCreacion" column="fecha_creacion"/>    
+	</resultMap>
+   
+	<select id="getAllProveedor" resultMap="ProveedorResult">
+		SELECT * FROM proveedor order by nombre
+	</select>
+	
+	<select id="filterProveedor" resultMap="ProveedorResult" parameterType="java.lang.String">
+		SELECT * FROM proveedor where nombre like #{filter} order by nombre
+	</select>
+	
+	<select id="checkFkProveedor" resultType="int" parameterType="py.pol.una.ii.pw.model.Proveedor">
+		SELECT count(*) FROM productos where id_proveedor = #{idProveedor} 	
+	</select>
+   
+	<insert id="insertProveedor" parameterType="py.pol.una.ii.pw.model.Proveedor" useGeneratedKeys="true" keyProperty="idProveedor">
+	  INSERT INTO proveedor(id_proveedor, direccion, nombre, ruc, fecha_actualizacion, fecha_creacion )
+	  VALUES(nextval('proveedor_id_proveedor_seq'),#{direccion}, #{nombre}, #{ruc}, #{fechaActualizacion},#{fechaCreacion})
+	</insert>
+   
+	<update id="updateProveedor" parameterType="py.pol.una.ii.pw.model.Proveedor">
+		UPDATE proveedor 
+		SET
+		 direccion= #{direccion},
+		 nombre = #{nombre},
+		 ruc = #{ruc},
+		 fecha_actualizacion = #{fechaActualizacion}
+		WHERE id_proveedor = #{idProveedor}
+	</update>
+   
+	<delete id="deleteProveedor" parameterType="long">
+		DELETE FROM proveedor WHERE id_proveedor = #{idProveedor}
+	</delete>
+</mapper>
+
+

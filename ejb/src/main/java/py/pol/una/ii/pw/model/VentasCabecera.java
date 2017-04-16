@@ -18,8 +18,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
-@Entity
-@Table(name="ventas_cabecera")
 public class VentasCabecera implements Serializable{
 	
 	private static final long serialVersionUID = -7036753228467616468L;
@@ -55,10 +53,6 @@ public class VentasCabecera implements Serializable{
 	}
 
 
-	@Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "venta_cab_id_venta_cab_seq")
-    @SequenceGenerator(name = "venta_cab_id_venta_cab_seq", initialValue = 1, allocationSize = 1, sequenceName = "venta_cab_id_venta_cab_seq")
-	@Column(name="id_ventas_cab")
 	public Long getIdVentasCabecera() {
 		return idVentasCabecera;
 	}
@@ -66,8 +60,7 @@ public class VentasCabecera implements Serializable{
 	public void setIdVentasCabecera(Long idVentasCabecera) {
 		this.idVentasCabecera = idVentasCabecera;
 	}
-	@ManyToOne
-	@JoinColumn(name="id_cliente")
+	
 	public Clientes getClientes() {
 		return clientes;
 	}
@@ -75,7 +68,6 @@ public class VentasCabecera implements Serializable{
 		this.clientes = clientes;
 	}
 	
-	@OneToMany(fetch = FetchType.EAGER, mappedBy = "ventasCabecera", cascade = CascadeType.ALL, orphanRemoval = true)
 	public List<VentasDetalles> getVentasDetalles() {
 		return ventasDetalles;
 	}
@@ -84,7 +76,6 @@ public class VentasCabecera implements Serializable{
 		this.ventasDetalles = ventasDetalles;
 	}
 
-	@Column(name="monto_total")
 	public Double getMontoTotal() {
 		return montoTotal;
 	}
@@ -93,14 +84,13 @@ public class VentasCabecera implements Serializable{
 		this.montoTotal = montoTotal;
 	}
 	
-	@Column(name="saldo")
 	public Double getSaldo() {
 		return saldo;
 	}
 	public void setSaldo(Double saldo) {
 		this.saldo = saldo;
 	}
-	@Column(name="estado")
+	
 	public String getEstado() {
 		return Estado;
 	}
@@ -109,7 +99,6 @@ public class VentasCabecera implements Serializable{
 		Estado = estado;
 	}
 
-	@Column(name="fecha_documento")
 	public Date getFechaDocumento() {
 		return fechaDocumento;
 	}
@@ -117,7 +106,6 @@ public class VentasCabecera implements Serializable{
 		this.fechaDocumento = fechaDocumento;
 	}
 	
-	@Column(name="fecha_creacion")
 	public Date getFechaCreacion() {
 		return fechaCreacion;
 	}
@@ -125,7 +113,6 @@ public class VentasCabecera implements Serializable{
 		this.fechaCreacion = fechaCreacion;
 	}
 	
-	@Column(name="fecha_actualizacion")
 	public Date getFechaActualizacion() {
 		return fechaActualizacion;
 	}

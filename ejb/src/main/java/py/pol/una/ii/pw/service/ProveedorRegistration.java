@@ -2,13 +2,15 @@
 package py.pol.una.ii.pw.service;
 
 import py.pol.una.ii.pw.model.Proveedor;
+import py.pol.una.ii.pw.mybatis.MyBatisUtil;
+import py.pol.una.ii.pw.mybatis.mappers.ProveedorMapper;
 
 import javax.ejb.Stateless;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
 import javax.validation.ValidationException;
+
+import org.apache.ibatis.session.SqlSession;
 
 import java.util.Date;
 import java.util.logging.Logger;
@@ -21,16 +23,23 @@ public class ProveedorRegistration {
     private Logger log;
 
     @Inject
-    private EntityManager em;
-
-    @Inject
     private Event<Proveedor> proveedorEventSrc;
 
-    public void register(Proveedor proveedor) throws Exception {
-    	proveedor.setFechaCreacion(new Date());
+    public void register(Proveedor proveedor){
     	proveedor.setFechaActualizacion(new Date());
-        log.info("Registering " + proveedor.getNombre());
-        em.persist(proveedor);
+    	proveedor.setFechaCreacion(new Date());
+    	
+    	SqlSession sqlSession = new MyBatisUtil().getSession();
+        
+    	try
+        {
+        	ProveedorMapper proveedorMapper = sqlSession.getMapper(ProveedorMapper.class);
+            proveedorMapper.insertProveedor(proveedor);
+            sqlSession.commit();
+        } finally
+        {
+            sqlSession.close();
+        }
         proveedorEventSrc.fire(proveedor);
     }
     
@@ -40,18 +49,33 @@ public class ProveedorRegistration {
     	proveedor.setFechaActualizacion(new Date());
     	proveedor.setFechaCreacion(proveedor.getFechaCreacion());
         log.info("Se actualiza " + proveedor.getNombre());
-        em.merge(proveedor);
-        em.flush();
+        SqlSession sqlSession = new MyBatisUtil().getSession();
+        try
+        {
+        	ProveedorMapper proveedorMapper = sqlSession.getMapper(ProveedorMapper.class);
+        	proveedorMapper.updateProveedor(proveedor);
+            sqlSession.commit();
+        } finally
+        {
+            sqlSession.close();
+        }
         proveedorEventSrc.fire(proveedor);
     }
     
     
     public String remove(Proveedor proveedor) throws ValidationException {
     	if(checkFk(proveedor)){
-    		proveedor = em.merge(proveedor);
-    		em.remove(proveedor);
-            em.flush();
-            proveedorEventSrc.fire(proveedor);
+    		SqlSession sqlSession = new MyBatisUtil().getSession();
+            try
+            {
+            	ProveedorMapper proveedorMapper = sqlSession.getMapper(ProveedorMapper.class);
+            	proveedorMapper.deleteProveedor(proveedor.getIdProveedor());
+                sqlSession.commit();
+            } finally
+            {
+                sqlSession.close();
+            }
+    		proveedorEventSrc.fire(proveedor);
             return "removed";
     	}else{
     		throw new ValidationException("Proveedor en uso");
@@ -60,15 +84,22 @@ public class ProveedorRegistration {
     }
     
     public Boolean checkFk(Proveedor proveedor){
-    	TypedQuery<Long> tq = em
-    			.createQuery("Select count(p) from Productos p"
-    					+ " where p.proveedor=:proveedor", Long.class);
-    	tq.setParameter("proveedor", proveedor);
-    	Long l = tq.getSingleResult();
+    	Integer l=-1;
+    	SqlSession sqlSession = new MyBatisUtil().getSession();
+        try
+        {
+        	ProveedorMapper proveedorMapper = sqlSession.getMapper(ProveedorMapper.class);
+        	l = proveedorMapper.checkFkProveedor(proveedor);
+            
+        } finally
+        {
+            sqlSession.close();
+        }
     	if(l>0){
     		return false;
     	}else{
     		return true;
     	}
+    
     }
 }

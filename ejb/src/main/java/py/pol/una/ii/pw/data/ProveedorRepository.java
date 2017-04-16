@@ -17,52 +17,51 @@
 package py.pol.una.ii.pw.data;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
+
+import org.apache.ibatis.session.SqlSession;
 
 import java.util.List;
 
 import py.pol.una.ii.pw.model.Proveedor;
+import py.pol.una.ii.pw.mybatis.MyBatisUtil;
+import py.pol.una.ii.pw.mybatis.mappers.ProveedorMapper;
 
 @ApplicationScoped
 public class ProveedorRepository {
 
-    @Inject
-    private EntityManager em;
-
     public Proveedor findById(Long id) {
-        return em.find(Proveedor.class, id);
-    }
-
-    public Proveedor findByNombre(String name) {
-        CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<Proveedor> criteria = cb.createQuery(Proveedor.class);
-        Root<Proveedor> proveedor = criteria.from(Proveedor.class);
-        // Swap criteria statements if you would like to try out type-safe criteria queries, a new
-        // feature in JPA 2.0
-        // criteria.select(member).where(cb.equal(member.get(Member_.email), email));
-        criteria.select(proveedor).where(cb.equal(proveedor.get("nombre"), name));
-        return em.createQuery(criteria).getSingleResult();
+    	SqlSession sqlSession = new MyBatisUtil().getSession();
+    	Proveedor tmp = null;
+    	if(sqlSession != null){
+    		try
+            {
+            	ProveedorMapper proveedorMapper = sqlSession.getMapper(ProveedorMapper.class);
+            	tmp = proveedorMapper.getProveedorById(id);
+            } finally
+            {
+                sqlSession.close();
+            }
+    	}
+    	return tmp;
     }
 
     public List<Proveedor> findAllOrderedByName(String queryx) {
-    	String query = "Select c from Proveedor c";
-        if(queryx!=null){
-        	query += " where lower(c.nombre) like lower(:valor) or"
-        			+ " lower(c.ruc) like lower(:ruc)";
-        }
-        query +=" order by c.nombre";
-        TypedQuery<Proveedor> tq = em.
-        		createQuery(query, 
-        				Proveedor.class);
-    	if(queryx!=null){
-    		tq.setParameter("valor", "%"+queryx+"%");
-    		tq.setParameter("ruc", "%"+queryx+"%");
+    	SqlSession sqlSession = new MyBatisUtil().getSession();
+    	List<Proveedor> tq = null;
+    	if(sqlSession != null){
+    		try
+            {
+            	ProveedorMapper proveedorMapper = sqlSession.getMapper(ProveedorMapper.class);
+            	if(queryx != null){
+            		tq = proveedorMapper.filterProveedor("%"+queryx+"%");
+            	}else{
+            		tq = proveedorMapper.getAllProveedor();
+            	}
+            } finally
+            {
+                sqlSession.close();
+            }
     	}
-    	return tq.getResultList();
+    	return tq;
     }
 }

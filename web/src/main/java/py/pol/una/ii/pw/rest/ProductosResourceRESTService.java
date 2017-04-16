@@ -93,7 +93,7 @@ public class ProductosResourceRESTService {
     }
     
     
-    @PUT
+    /*@PUT
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateProductos(Productos producto){
@@ -121,6 +121,6 @@ public class ProductosResourceRESTService {
 			// ignore
 		}
     	return productos;
-    }
+    }*/
     
 }

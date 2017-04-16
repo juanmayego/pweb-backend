@@ -26,15 +26,6 @@
       <!-- The datasource is deployed as <EAR>/META-INF/EjbJaxRS-ds.xml, you
          can find it in the source at ear/src/main/application/META-INF/EjbJaxRS-ds.xml -->
       <jta-data-source>java:jboss/datasources/postgresDS</jta-data-source>
-      <class>py.pol.una.ii.pw.model.Clientes</class>
-      <class>py.pol.una.ii.pw.model.ComprasCabecera</class>
-      <class>py.pol.una.ii.pw.model.ComprasDetalles</class>
-      <class>py.pol.una.ii.pw.model.Member</class>
-      <class>py.pol.una.ii.pw.model.Pagos</class>
-      <class>py.pol.una.ii.pw.model.Productos</class>
-      <class>py.pol.una.ii.pw.model.Proveedor</class>
-      <class>py.pol.una.ii.pw.model.VentasCabecera</class>
-      <class>py.pol.una.ii.pw.model.VentasDetalles</class>
       <properties>
          <!-- Properties for Hibernate -->
          <property name="hibernate.hbm2ddl.auto" value="none" />

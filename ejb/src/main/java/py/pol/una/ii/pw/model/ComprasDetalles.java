@@ -14,8 +14,7 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
-@Entity
-@Table(name="compras_detalles")
+
 public class ComprasDetalles implements Serializable{
 	
 	
@@ -38,10 +37,6 @@ public class ComprasDetalles implements Serializable{
 		this.cantidad = cantidad;
 	}
 	
-	@Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "compra_det_id_compra_det_seq")
-    @SequenceGenerator(name = "compra_det_id_compra_det_seq", initialValue = 1, allocationSize = 1, sequenceName = "compra_det_id_compra_det_seq")
-	@Column(name="id_compra_det")
 	public Long getIdComprasDetalle() {
 		return idComprasDetalle;
 	}
@@ -49,9 +44,6 @@ public class ComprasDetalles implements Serializable{
 		this.idComprasDetalle = idComprasDetalle;
 	}
 	
-	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "id_compras_cab", nullable = false)
-	@NotNull
 	public ComprasCabecera getComprasCabecera() {
 		return comprasCabecera;
 	}
@@ -59,8 +51,6 @@ public class ComprasDetalles implements Serializable{
 		this.comprasCabecera = comprasCabecera;
 	}
 	
-	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "id_producto")
 	public Productos getProducto() {
 		return producto;
 	}
@@ -68,7 +58,6 @@ public class ComprasDetalles implements Serializable{
 		this.producto = producto;
 	}
 	
-	@Column(name="cantidad")
 	public Long getCantidad() {
 		return cantidad;
 	}

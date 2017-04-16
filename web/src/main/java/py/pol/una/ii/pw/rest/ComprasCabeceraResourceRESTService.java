@@ -3,6 +3,9 @@ package py.pol.una.ii.pw.rest;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,13 +13,18 @@ import java.util.Map;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
+import javax.json.Json;
+import javax.json.stream.JsonGenerator;
+import javax.json.stream.JsonGeneratorFactory;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -40,10 +48,11 @@ public class ComprasCabeceraResourceRESTService {
      * or with a map of fields, and related errors.
      */
     
-    @SuppressWarnings("resource")
+    /*@SuppressWarnings("resource")
 	@GET
     @Produces(MediaType.APPLICATION_JSON)
     public List<ComprasCabeceraDTO> listAllCompras(){
+
     	try {
     		List<ComprasCabeceraDTO> resultados = new ArrayList<ComprasCabeceraDTO>();
     		Gson gson = new GsonBuilder().create();
@@ -60,6 +69,21 @@ public class ComprasCabeceraResourceRESTService {
 			e.printStackTrace();
 			return null;
 		}
+    }*/
+    
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response allCompras(){
+    	StreamingOutput so = new StreamingOutput() {
+			
+			@Override
+			public void write(OutputStream arg0) throws IOException,
+					WebApplicationException {
+				repository.streamCompras(arg0);
+			}
+		};
+    	
+    	return Response.ok(so).build();
     }
     
     @POST

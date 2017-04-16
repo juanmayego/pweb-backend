@@ -18,8 +18,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
-@Entity
-@Table(name="compras_cabecera")
 public class ComprasCabecera implements Serializable{
 	
 	private static final long serialVersionUID = -7036753228467616468L;
@@ -46,10 +44,7 @@ public class ComprasCabecera implements Serializable{
 		this.fechaCreacion = fechaCreacion;
 		this.fechaActualizacion = fechaActualizacion;
 	}
-	@Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "compra_cab_id_compra_cab_seq")
-    @SequenceGenerator(name = "compra_cab_id_compra_cab_seq", initialValue = 1, allocationSize = 1, sequenceName = "compra_cab_id_compra_cab_seq")
-	@Column(name="id_compras_cab")
+	
 	public Long getIdComprasCabecera() {
 		return idComprasCabecera;
 	}
@@ -57,8 +52,6 @@ public class ComprasCabecera implements Serializable{
 		this.idComprasCabecera = idComprasCabecera;
 	}
 	
-	@ManyToOne
-	@JoinColumn(name="id_proveedor")
 	public Proveedor getProveedor() {
 		return proveedor;
 	}
@@ -66,7 +59,6 @@ public class ComprasCabecera implements Serializable{
 		this.proveedor = proveedor;
 	}
 	
-	@Column(name="monto_total")
 	public Double getMontoTotal() {
 		return montoTotal;
 	}
@@ -74,14 +66,13 @@ public class ComprasCabecera implements Serializable{
 		this.montoTotal = montoTotal;
 	}
 	
-	@OneToMany(fetch = FetchType.EAGER, mappedBy = "comprasCabecera", cascade = CascadeType.ALL, orphanRemoval = true)
 	public List<ComprasDetalles> getComprasDetalles() {
 		return comprasDetalles;
 	}
 	public void setComprasDetalles(List<ComprasDetalles> comprasDetalles) {
 		this.comprasDetalles = comprasDetalles;
 	}
-	@Column(name="fecha_documento")
+	
 	public Date getFechaDocumento() {
 		return fechaDocumento;
 	}
@@ -89,7 +80,6 @@ public class ComprasCabecera implements Serializable{
 		this.fechaDocumento = fechaDocumento;
 	}
 	
-	@Column(name="fecha_creacion")
 	public Date getFechaCreacion() {
 		return fechaCreacion;
 	}
@@ -97,7 +87,6 @@ public class ComprasCabecera implements Serializable{
 		this.fechaCreacion = fechaCreacion;
 	}
 	
-	@Column(name="fecha_actualizacion")
 	public Date getFechaActualizacion() {
 		return fechaActualizacion;
 	}
