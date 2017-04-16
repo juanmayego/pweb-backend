@@ -24,25 +24,19 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import org.apache.ibatis.session.SqlSession;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.logging.SimpleFormatter;
 
 import py.pol.una.ii.pw.model.ComprasCabecera;
 import py.pol.una.ii.pw.model.ComprasDetalles;
-import py.pol.una.ii.pw.model.dto.ComprasCabeceraDTO;
 import py.pol.una.ii.pw.model.dto.ComprasDetallesDTO;
+import py.pol.una.ii.pw.mybatis.MyBatisUtil;
+import py.pol.una.ii.pw.mybatis.mappers.ComprasCabeceraMapper;
 
 @ApplicationScoped
 public class ComprasRepository {
@@ -51,13 +45,28 @@ public class ComprasRepository {
     private EntityManager em;
 
     private Integer limite = 1000;
+    
+    
     public ComprasCabecera findById(Long id) {
-        return em.find(ComprasCabecera.class, id);
+        ComprasCabecera tmp = null;
+        SqlSession sqlSession = new MyBatisUtil().getSession();
+    	try
+        {
+        	ComprasCabeceraMapper comprasCabeceraMapper = sqlSession.getMapper(ComprasCabeceraMapper.class);
+        	
+        	tmp = comprasCabeceraMapper.getCompraById(id);
+        	
+        } finally
+        {
+            sqlSession.close();
+        }
+    	
+    	return tmp;
     }
     
     
     
-    public String findAllCabeceras() throws IOException {
+    /*public String findAllCabeceras() throws IOException {
     	
     	Gson gson = new GsonBuilder().create();
     	Long totalRegistros = obtenerCantidad();
@@ -104,7 +113,7 @@ public class ComprasRepository {
         
         return ruta;
 
-    }
+    }*/
     
     public void streamCompras(OutputStream stream){
     	JsonGenerator generator = Json.createGenerator(stream);
@@ -148,9 +157,6 @@ public class ComprasRepository {
     	generator.close();
     	
     }
-    
-    
-    
     
     
     public Long obtenerCantidad(){

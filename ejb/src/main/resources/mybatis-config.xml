@@ -14,5 +14,7 @@
 	<mappers>
  		<mapper resource="py/pol/una/ii/pw/mybatis/mappers/ProveedorMapper.xml"/>
  		<mapper resource="py/pol/una/ii/pw/mybatis/mappers/ProductosMapper.xml"/>
+ 		<mapper resource="py/pol/una/ii/pw/mybatis/mappers/ComprasCabeceraMapper.xml"/>
+ 		<mapper resource="py/pol/una/ii/pw/mybatis/mappers/ComprasDetallesMapper.xml"/>
   	</mappers>
 </configuration>

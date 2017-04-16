@@ -19,12 +19,18 @@ package py.pol.una.ii.pw.service;
 import py.pol.una.ii.pw.model.ComprasCabecera;
 import py.pol.una.ii.pw.model.ComprasDetalles;
 import py.pol.una.ii.pw.model.Productos;
+import py.pol.una.ii.pw.mybatis.MyBatisUtil;
+import py.pol.una.ii.pw.mybatis.mappers.ComprasCabeceraMapper;
+import py.pol.una.ii.pw.mybatis.mappers.ComprasDetallesMapper;
+import py.pol.una.ii.pw.mybatis.mappers.ProductosMapper;
 
 import javax.ejb.Stateless;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
+
+import org.apache.ibatis.session.SqlSession;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -45,21 +51,43 @@ public class ComprasRegistration {
     private Event<ComprasCabecera> comprasEventSrc;
 
     public String register(ComprasCabecera instance) throws Exception {
-    	if(validateProductos(instance)){
+    	//if(validateProductos(instance)){
     		Double sum = 0D;
     		for(ComprasDetalles det : instance.getComprasDetalles()){
     			sum+=obtenerTotal(det.getCantidad(),det.getProducto().getIdProducto());
     		}
     		instance.setMontoTotal(sum);
+    		instance.setFechaDocumento(new Date());
     		instance.setFechaCreacion(new Date());
         	instance.setFechaActualizacion(new Date());
-            log.info("Registering " + instance.getFechaDocumento());
-            em.persist(instance);
+        	
+            log.info("Registrando nueva compra");
+            
+            SqlSession sqlSession = new MyBatisUtil().getSession();
+            
+        	try
+            {
+            	ComprasCabeceraMapper comprasCabeceraMapper = sqlSession.getMapper(ComprasCabeceraMapper.class);
+            	ComprasDetallesMapper comprasDetallesMapper = sqlSession.getMapper(ComprasDetallesMapper.class);
+            	comprasCabeceraMapper.insertCompraCabecera(instance);
+            	
+            	for(ComprasDetalles det : instance.getComprasDetalles()){
+        			det.setComprasCabecera(instance);
+        			comprasDetallesMapper.insertCompraDetalle(det);
+        		}
+                
+                sqlSession.commit();
+            } finally
+            {
+                sqlSession.close();
+            }
+            
+            
             comprasEventSrc.fire(instance);
             return "persisted";
-    	}else{
+    	/*}else{
     		return "invalid";
-    	}
+    	}*/
     	
     }
     
@@ -115,13 +143,21 @@ public class ComprasRegistration {
     	}
     }
     
-    public ComprasCabecera findById(Long id){
-    	return em.find(ComprasCabecera.class, id);
-    }
-    
     
     public Double obtenerTotal(Long cant, Long id){
-    	Productos prod = em.find(Productos.class, id);
-    	return prod.getPrecio()*cant;
+    	SqlSession sqlSession = new MyBatisUtil().getSession();
+    	Productos prod = null;
+    	try
+        {
+        	ProductosMapper productosMapper = sqlSession.getMapper(ProductosMapper.class);
+        	prod = productosMapper.getProductoById(id);
+        } finally
+        {
+            sqlSession.close();
+        }
+    	if(prod != null)
+    		return prod.getPrecio()*cant;
+    	else
+    		return 0D;
     }
 }

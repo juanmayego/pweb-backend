@@ -35,6 +35,7 @@ public class ProveedorRegistration {
         {
         	ProveedorMapper proveedorMapper = sqlSession.getMapper(ProveedorMapper.class);
             proveedorMapper.insertProveedor(proveedor);
+            
             sqlSession.commit();
         } finally
         {

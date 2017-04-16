@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+   
+<mapper namespace="py.pol.una.ii.pw.mybatis.mappers.ComprasCabeceraMapper">
+ 
+  	<select id="getCompraById" parameterType="java.lang.Long" resultMap="ComprasCabeceraResult">
+		SELECT
+			cc.*,
+			pv.nombre,
+			pv.direccion,
+			pv.ruc,
+			cd.id_compra_det,
+			cd.cantidad,
+			cd.id_producto,
+			p.descripcion,
+			p.precio
+		FROM
+		compras_cabecera cc
+		join compras_detalles cd on cd.id_compras_cab = cc.id_compras_cab
+		join proveedor pv on pv.id_proveedor = cc.id_proveedor
+		join productos p on p.id_producto = cd.id_producto
+		WHERE
+		cc.id_compras_cab = #{idComprasCabecera}
+	</select>
+	
+	<resultMap type="py.pol.una.ii.pw.model.ComprasCabecera" id="ComprasCabeceraResult">
+	  <id property="idComprasCabecera" column="id_compras_cab"/>
+	  <result property="montoTotal" column="monto_total"/>
+	  <result property="fechaDocumento" column="fecha_documento"/>
+	  <result property="fechaActualizacion" column="fecha_actualizacion"/>
+	  <result property="fechaCreacion" column="fecha_creacion"/>
+	  
+	  <association property="proveedor" javaType="py.pol.una.ii.pw.model.Proveedor">
+	  	<id property="idProveedor" column="id_proveedor"/>
+	    <result property="ruc" column="ruc"/>
+	    <result property="nombre" column="nombre"/>
+	    <result property="direccion" column="direccion"/>
+	  </association>
+	  
+	  
+	  <collection property="comprasDetalles" ofType="py.pol.una.ii.pw.model.ComprasDetalles">
+		    <id property="idComprasDetalle" column="id_crompra_det"/>
+		    <result property="cantidad" column="cantidad"/>
+		    <association property="producto" javaType="py.pol.una.ii.pw.model.Productos">
+			  	<id property="idProducto" column="id_producto"/>
+			    <result property="descripcion" column="descripcion"/>
+			    <result property="precio" column="precio"/>
+	  		</association>
+  	 </collection>
+  	 
+  	 
+	</resultMap>
+   
+	<select id="getAllCompras" resultMap="ComprasCabeceraResult" parameterType="java.lang.Integer">
+		SELECT * FROM compras_cabecera order by id_compras_cab offset #{desde} limit 1000
+	</select>
+	
+	<insert id="insertCompraCabecera" parameterType="py.pol.una.ii.pw.model.ComprasCabecera" useGeneratedKeys="true" keyProperty="idComprasCabecera">
+	  INSERT INTO compras_cabecera(id_compras_cab, fecha_documento, fecha_creacion, fecha_actualizacion, monto_total, id_proveedor)
+	  VALUES(nextval('compra_cab_id_compra_cab_seq'), #{fechaDocumento}, #{fechaCreacion}, #{fechaActualizacion},
+	  #{montoTotal}, #{proveedor.idProveedor})
+	</insert>
+   
+	<update id="updateCompraCabecera" parameterType="py.pol.una.ii.pw.model.ComprasCabecera">
+		UPDATE compras_cabecera 
+		SET
+		 monto_total = #{montoTotal},
+		 fecha_actualizacion = #{fechaActualizacion}
+		WHERE id_compras_cab = #{idComprasCabecera}
+	</update>
+   
+	<!--  <delete id="deleteProveedor" parameterType="long">
+		DELETE FROM proveedor WHERE id_proveedor = #{idProveedor}
+	</delete>  -->
+</mapper> 
+
+

@@ -1,38 +1,26 @@
 package py.pol.una.ii.pw.rest;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.Writer;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.stream.JsonGenerator;
-import javax.json.stream.JsonGeneratorFactory;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 import py.pol.una.ii.pw.data.ComprasRepository;
 import py.pol.una.ii.pw.model.ComprasCabecera;
 import py.pol.una.ii.pw.model.ComprasDetalles;
-import py.pol.una.ii.pw.model.dto.ComprasCabeceraDTO;
 import py.pol.una.ii.pw.service.ComprasRegistration;
 
 
@@ -47,6 +35,19 @@ public class ComprasCabeceraResourceRESTService {
      * Creates a new member from the values provided. Performs validation, and will return a JAX-RS response with either 200 ok,
      * or with a map of fields, and related errors.
      */
+    
+    
+    @GET
+    @Path("/{id:[0-9][0-9]*}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ComprasCabecera lookupCompraById(@PathParam("id") long id) {
+    	ComprasCabecera compras = repository.findById(id);
+        if (compras == null) {
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
+        }
+        return compras;
+    }
+    
     
     /*@SuppressWarnings("resource")
 	@GET
@@ -95,8 +96,7 @@ public class ComprasCabeceraResourceRESTService {
         try 
         {
             for(ComprasDetalles tmp: compra.getComprasDetalles()){
-        		tmp.setComprasCabecera(compra);
-        		
+        		tmp.setComprasCabecera(compra);	
         	}
             String save;
             save=registration.register(compra);

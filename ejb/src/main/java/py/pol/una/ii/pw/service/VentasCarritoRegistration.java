@@ -16,7 +16,6 @@ import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
-import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
 import py.pol.una.ii.pw.model.Clientes;
@@ -147,7 +146,7 @@ public class VentasCarritoRegistration {
     	trx.rollback();
     }
     
-    private void actualizarStock(){
+    /*private void actualizarStock(){
     	for(VentasDetalles det : instance.getVentasDetalles()){
     		Productos producto = em.find(Productos.class, det.getProducto().getIdProducto());
     		producto.setCantidadDisponible(producto.getCantidadDisponible() - det.getCantidad());
@@ -160,7 +159,7 @@ public class VentasCarritoRegistration {
     private void actualizarSaldoCliente(){
     	Clientes cliente = em.find(Clientes.class, instance.getClientes().getIdCliente());
     	cliente.setSaldoVentas(cliente.getSaldoVentas()+instance.getMontoTotal());
-    }
+    }*/
     
     
     public Double obtenerTotal(Long cant, Long id){

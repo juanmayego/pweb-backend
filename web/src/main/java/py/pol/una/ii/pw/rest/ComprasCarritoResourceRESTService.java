@@ -20,11 +20,12 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import py.pol.una.ii.pw.model.ComprasCabecera;
 import py.pol.una.ii.pw.model.Proveedor;
 import py.pol.una.ii.pw.model.ComprasDetalles;
 import py.pol.una.ii.pw.service.ComprasCarritoRegistration;
 
-@Path("/cartcompra")
+@Path("/compras/carrito")
 @RequestScoped
 public class ComprasCarritoResourceRESTService {
 	@Inject
@@ -38,9 +39,45 @@ public class ComprasCarritoResourceRESTService {
 	
 	private static final String CART_SESSION_KEY 
 	    = "cartcompra";
-
+	
 	@POST
-	@Path("/confirmarcompra")
+	@Path("/")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response start(@Context HttpServletRequest request, ComprasCabecera compra){
+		Response.ResponseBuilder builder = null;
+		ComprasCarritoRegistration registration = (ComprasCarritoRegistration) 
+				request.getSession().getAttribute(CART_SESSION_KEY);
+		if(registration == null){
+			InitialContext ic;
+			try {
+				ic = new InitialContext();
+				registration = (ComprasCarritoRegistration) 
+						ic.lookup("java:global/EjbJaxRS-ear/EjbJaxRS-ejb/ComprasCarritoRegistration!py.pol.una.ii.pw.service.ComprasCarritoRegistration");
+
+				request.getSession().setAttribute(
+						CART_SESSION_KEY, 
+						registration);
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+				
+		try {
+			registration.initCompra(compra);
+			builder = Response.ok();
+		} catch (Exception e) {
+
+			builder = Response.serverError();
+			e.printStackTrace();
+		}
+		return builder.build();
+	}
+	
+	@POST
+	@Path("/confirmar")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response commitCompra(@Context HttpServletRequest request) {
@@ -102,7 +139,7 @@ public class ComprasCarritoResourceRESTService {
 	}
 
 	@POST
-	@Path("/proveedor/asignar")
+	@Path("/proveedor")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response addProveedor(@Context HttpServletRequest request, Proveedor proveedor){
@@ -132,7 +169,7 @@ public class ComprasCarritoResourceRESTService {
 	}
 	
 	@POST
-	@Path("/detallecompra/agregar")
+	@Path("/detalle")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response addProducto(@Context HttpServletRequest request,ComprasDetalles detalle){
@@ -169,7 +206,7 @@ public class ComprasCarritoResourceRESTService {
 	}
 	
 	
-	@POST
+	/*@POST
 	@Path("/detallecompra/modificar")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -204,8 +241,8 @@ public class ComprasCarritoResourceRESTService {
 		}
 		builder = Response.ok();
 		return builder.build();
-	}
-	@POST
+	}*/
+	/*@POST
 	@Path("/detallecompra/borrar")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -241,7 +278,7 @@ public class ComprasCarritoResourceRESTService {
 		builder = Response.ok();
 		return builder.build();
 	}
-	
+	*/
 	private Response.ResponseBuilder createViolationResponse(
 			Set<ConstraintViolation<?>> violations) {
 		log.fine("Validation completed. violations found: " + violations.size());
