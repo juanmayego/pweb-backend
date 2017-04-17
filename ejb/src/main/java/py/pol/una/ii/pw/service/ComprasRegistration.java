@@ -81,8 +81,6 @@ public class ComprasRegistration {
             {
                 sqlSession.close();
             }
-            
-            
             comprasEventSrc.fire(instance);
             return "persisted";
     	/*}else{

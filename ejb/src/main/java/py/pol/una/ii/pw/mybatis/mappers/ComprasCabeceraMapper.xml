@@ -52,8 +52,41 @@
   	 
 	</resultMap>
    
-	<select id="getAllCompras" resultMap="ComprasCabeceraResult" parameterType="java.lang.Integer">
-		SELECT * FROM compras_cabecera order by id_compras_cab offset #{desde} limit 1000
+	<select id="getAllCompras" resultMap="ComprasCabeceraResult" parameterType="py.pol.una.ii.pw.util.PaginacionCompras">
+		SELECT
+			cc.*,
+			pv.nombre,
+			pv.direccion,
+			pv.ruc,
+			cd.id_compra_det,
+			cd.cantidad,
+			cd.id_producto,
+			p.descripcion,
+			p.precio
+		FROM
+		compras_cabecera cc
+		join compras_detalles cd on cd.id_compras_cab = cc.id_compras_cab
+		join proveedor pv on pv.id_proveedor = cc.id_proveedor
+		join productos p on p.id_producto = cd.id_producto
+		offset #{desde}
+		limit #{limite}
+	</select>
+	
+	<select id="cantidadRegistrosDeMilCabs" resultType="java.lang.Integer" parameterType="java.lang.Integer">
+		SELECT sum(cantidad) from
+		(SELECT (select count(*) from compras_detalles cd where cd.id_compras_cab = cc.id_compras_cab) as cantidad from compras_cabecera cc
+			offset #{desde} limit 1000)
+		as x
+	</select>
+	
+	<select id="cantidadComprasCabecera" resultType="java.lang.Integer">
+		SELECT
+			count(*)
+		FROM
+		compras_cabecera cc
+		join compras_detalles cd on cd.id_compras_cab = cc.id_compras_cab
+		join proveedor pv on pv.id_proveedor = cc.id_proveedor
+		join productos p on p.id_producto = cd.id_producto
 	</select>
 	
 	<insert id="insertCompraCabecera" parameterType="py.pol.una.ii.pw.model.ComprasCabecera" useGeneratedKeys="true" keyProperty="idComprasCabecera">

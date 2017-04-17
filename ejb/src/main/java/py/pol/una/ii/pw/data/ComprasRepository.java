@@ -17,32 +17,26 @@
 package py.pol.una.ii.pw.data;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.stream.JsonGenerator;
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
 
 import org.apache.ibatis.session.SqlSession;
 
 import java.io.OutputStream;
-import java.math.BigInteger;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.List;
 
 import py.pol.una.ii.pw.model.ComprasCabecera;
 import py.pol.una.ii.pw.model.ComprasDetalles;
-import py.pol.una.ii.pw.model.dto.ComprasDetallesDTO;
 import py.pol.una.ii.pw.mybatis.MyBatisUtil;
 import py.pol.una.ii.pw.mybatis.mappers.ComprasCabeceraMapper;
+import py.pol.una.ii.pw.util.PaginacionCompras;
 
 @ApplicationScoped
 public class ComprasRepository {
 
-    @Inject
-    private EntityManager em;
+    /*@Inject
+    private EntityManager em;*/
 
     private Integer limite = 1000;
     
@@ -118,20 +112,42 @@ public class ComprasRepository {
     public void streamCompras(OutputStream stream){
     	JsonGenerator generator = Json.createGenerator(stream);
     	SimpleDateFormat f = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
-    	Long totalRegistros = obtenerCantidad();
-    	int i=0;
+    	Integer totalRegistros = obtenerCantidad();
+    	SqlSession sqlSession = new MyBatisUtil().getSession();
+    	PaginacionCompras page = new PaginacionCompras();
+    	Integer i=0;
+    	page.setDesde(0);
+    	page.setLimite(obtenerCantidadRegistros(i*1000));
+    	
+    	if(totalRegistros!=null){
+    		System.out.println("Total "+totalRegistros);
+    	}else{
+    		System.out.println("HAY UN ERROR EN TOTAL");
+    	}
+    	
+    	if(page!=null && page.getDesde()!=null){
+    		System.out.println("DESDE "+page.getDesde());
+    	}else{
+    		System.out.println("HAY UN ERROR EN DESDE");
+    	}
+    	
+    	if(page!=null && page.getLimite()!=null){
+    		System.out.println("LIMTE "+page.getLimite());
+    	}else{
+    		System.out.println("HAY UN ERROR EN LIMITE");
+    	}
     	generator
         .writeStartArray();
-    	while(totalRegistros > i*limite){
-	    	Query tq = em.createNativeQuery("select ccab.id_compras_cab from compras_cabecera ccab order by ccab.id_compras_cab offset :desde limit :limite");
-			tq.setParameter("desde", i*limite);
-			tq.setParameter("limite", limite);
-			@SuppressWarnings("unchecked")
-			List<BigInteger> result = tq.getResultList();
-			for(BigInteger object : result){
-				Long id = object.longValue();
-				ComprasCabecera aux = em.find(ComprasCabecera.class,id);
-				generator.writeStartObject();
+    	while(page.getLimite() != null && totalRegistros >= (page.getDesde()+page.getLimite())){
+    		List<ComprasCabecera> listCompras = null;
+        	
+        	
+        	ComprasCabeceraMapper comprasCabeceraMapper = sqlSession.getMapper(ComprasCabeceraMapper.class);
+        	listCompras = comprasCabeceraMapper.getAllCompras(page);
+  
+        	for(ComprasCabecera aux : listCompras){
+				
+        		generator.writeStartObject();
 					generator.write("idComprasCabecera", aux.getIdComprasCabecera());
 					generator.write("proveedor", aux.getProveedor().getNombre());
 					generator.write("montoTotal", aux.getMontoTotal());
@@ -139,7 +155,7 @@ public class ComprasRepository {
 					generator.write("fechaCreacion", f.format(aux.getFechaCreacion()));
 					generator.write("fechaActualizacion", f.format(aux.getFechaActualizacion()));
 					generator.writeStartArray("comprasDetalles");
-					for(ComprasDetallesDTO detalle : obtenerDetalle(aux)){
+					for(ComprasDetalles detalle : aux.getComprasDetalles()){
 						generator.writeStartObject();
 						generator.write("producto", detalle.getProducto().getDescripcion());
 						generator.write("cantidad", detalle.getCantidad());
@@ -148,26 +164,52 @@ public class ComprasRepository {
 					generator.writeEnd();
 				generator.writeEnd();
 			}
-			
 			i++;
+			page.setDesde(page.getLimite());
+			page.setLimite(obtenerCantidadRegistros(i*1000));
 			System.out.println(i*limite+" registros cargados");
 		}
     	generator.writeEnd();
     	generator.flush();
     	generator.close();
-    	
+    	sqlSession.close();
     }
     
     
-    public Long obtenerCantidad(){
-    	
-    	TypedQuery<Long> tq = em.createQuery(
-    			"Select count(c) from ComprasCabecera c",
-    			Long.class);
-    	return tq.getSingleResult();
-    	
+    public Integer obtenerCantidad(){
+    	Integer tmp = null;
+    	SqlSession sqlSession = new MyBatisUtil().getSession();
+    	try
+        {
+        	ComprasCabeceraMapper comprasCabeceraMapper = sqlSession.getMapper(ComprasCabeceraMapper.class);
+        	tmp = comprasCabeceraMapper.cantidadComprasCabecera();
+        } finally
+        {
+            sqlSession.close();
+        }
+    	return tmp;
     }
-    public List<ComprasDetallesDTO> obtenerDetalle(ComprasCabecera compra){
+    
+    
+    public Integer obtenerCantidadRegistros(Integer offset){
+    	Integer tmp = null;
+    	SqlSession sqlSession = new MyBatisUtil().getSession();
+    	try
+        {
+        	ComprasCabeceraMapper comprasCabeceraMapper = sqlSession.getMapper(ComprasCabeceraMapper.class);
+        	tmp = comprasCabeceraMapper.cantidadRegistrosDeMilCabs(offset);
+        	if(tmp != null){
+        		System.out.println("todo ok");
+        	}
+        } finally
+        {
+            sqlSession.close();
+        }
+    	return tmp;
+    }
+    
+    
+    /*public List<ComprasDetallesDTO> obtenerDetalle(ComprasCabecera compra){
     	TypedQuery<ComprasDetalles> tq = em.createQuery(
         		"Select c from ComprasDetalles c where c.comprasCabecera = :compra", 
         		ComprasDetalles.class);
@@ -182,5 +224,5 @@ public class ComprasRepository {
     		detalles.add(tmp);
     	}
     	return detalles;//tq.getResultList();
-    }
+    }*/
 }
