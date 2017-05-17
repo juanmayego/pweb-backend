@@ -17,11 +17,18 @@
 package py.pol.una.ii.pw.service;
 
 import py.pol.una.ii.pw.model.Clientes;
+import py.pol.una.ii.pw.model.Proveedor;
+import py.pol.una.ii.pw.mybatis.MyBatisUtil;
+import py.pol.una.ii.pw.mybatis.mappers.ClientesMapper;
+import py.pol.una.ii.pw.mybatis.mappers.ProveedorMapper;
 
 import javax.ejb.Stateless;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.validation.ValidationException;
+
+import org.apache.ibatis.session.SqlSession;
 
 import java.util.Date;
 import java.util.logging.Logger;
@@ -34,16 +41,25 @@ public class ClientesRegistration {
     private Logger log;
 
     @Inject
-    private EntityManager em;
-
-    @Inject
     private Event<Clientes> clienteEventSrc;
 
     public void register(Clientes cliente) throws Exception {
     	cliente.setFechaCreacion(new Date());
     	cliente.setFechaActualizacion(new Date());
-        log.info("Registering " + cliente.getNombre());
-        em.persist(cliente);
+        
+
+    	SqlSession sqlSession = new MyBatisUtil().getSession();
+        
+    	try
+        {
+        	ClientesMapper clienteMapper = sqlSession.getMapper(ClientesMapper.class);
+        	clienteMapper.insertCliente(cliente);
+            
+            sqlSession.commit();
+        } finally
+        {
+            sqlSession.close();
+        }
         clienteEventSrc.fire(cliente);
     }
     
@@ -51,16 +67,55 @@ public class ClientesRegistration {
     	cliente.setFechaActualizacion(new Date());
     	
     	log.info("Se actualizo cliente " + cliente.getIdCliente());
-    	em.merge(cliente);
-    	em.flush();
-    	clienteEventSrc.fire(cliente);
+    	SqlSession sqlSession = new MyBatisUtil().getSession();
+        try
+        {
+        	ClientesMapper clienteMapper = sqlSession.getMapper(ClientesMapper.class);
+        	clienteMapper.updateCliente(cliente);
+            sqlSession.commit();
+        } finally
+        {
+            sqlSession.close();
+        }
+        clienteEventSrc.fire(cliente);
     }
     
-    public void remove(Clientes cliente) throws Exception{
-    	log.info("Se elimino cliente " + cliente.getIdCliente());
-    	cliente = em.merge(cliente);
-    	em.remove(cliente);
-    	em.flush();
-    	clienteEventSrc.fire(cliente);
+    public String remove(Clientes cliente) throws Exception{
+    	if(checkFk(cliente)){
+    		SqlSession sqlSession = new MyBatisUtil().getSession();
+            try
+            {
+            	ClientesMapper clienteMapper = sqlSession.getMapper(ClientesMapper.class);
+            	clienteMapper.deleteCliente(cliente.getIdCliente());
+                sqlSession.commit();
+            } finally
+            {
+                sqlSession.close();
+            }
+            clienteEventSrc.fire(cliente);
+            return "removed";
+    	}else{
+    		throw new ValidationException("Cliente en uso");
+    	}
+    }
+    
+    public Boolean checkFk(Clientes cliente){
+    	Integer l=-1;
+    	SqlSession sqlSession = new MyBatisUtil().getSession();
+        try
+        {
+        	ClientesMapper clienteMapper = sqlSession.getMapper(ClientesMapper.class);
+        	l = clienteMapper.checkFkCliente(cliente);
+            
+        } finally
+        {
+            sqlSession.close();
+        }
+    	if(l>0){
+    		return false;
+    	}else{
+    		return true;
+    	}
+    
     }
 }

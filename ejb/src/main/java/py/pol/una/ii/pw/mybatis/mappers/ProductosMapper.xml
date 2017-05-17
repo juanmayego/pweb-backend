@@ -47,20 +47,6 @@
 	  values (nextval('productos_id_productos_seq'), #{descripcion} , #{precio}, #{cantidadDisponible},
 	   #{fechaActualizacion}, #{fechaCreacion}, #{proveedor.idProveedor})
 	</insert>
-   
-	<!-- <update id="updateProveedor" parameterType="Proveedor">
-		UPDATE proveedor 
-		SET
-		 direccion= #{direccion},
-		 nombre = #{nombre},
-		 ruc = #{ruc},
-		 fecha_actualizacion = #{fechaActualizacion}
-		WHERE id_proveedor = #{idProveedor}
-	</update>
-   
-	<delete id="deleteProveedor" parameterType="int">
-		DELETE FROM proveedor WHERE id_proveedor = #{idProveedor}
-	</delete> -->
 </mapper>
 
 

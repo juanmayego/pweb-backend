@@ -18,10 +18,19 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.transaction.UserTransaction;
 
+import org.apache.ibatis.session.SqlSession;
+
 import py.pol.una.ii.pw.model.Clientes;
 import py.pol.una.ii.pw.model.Productos;
+import py.pol.una.ii.pw.model.Proveedor;
 import py.pol.una.ii.pw.model.VentasCabecera;
 import py.pol.una.ii.pw.model.VentasDetalles;
+import py.pol.una.ii.pw.mybatis.MyBatisUtil;
+import py.pol.una.ii.pw.mybatis.mappers.VentasDetallesMapper;
+import py.pol.una.ii.pw.mybatis.mappers.ComprasCabeceraMapper;
+import py.pol.una.ii.pw.mybatis.mappers.ProductosMapper;
+import py.pol.una.ii.pw.mybatis.mappers.ClientesMapper;
+import py.pol.una.ii.pw.mybatis.mappers.VentasCabeceraMapper;
 
 @Stateful
 @StatefulTimeout(unit=TimeUnit.MINUTES, value=30)
@@ -31,8 +40,6 @@ public class VentasCarritoRegistration {
 	@Inject
     private Logger log;
 
-    @Inject
-    private EntityManager em;
     
     @Resource
     private EJBContext context;
@@ -42,11 +49,13 @@ public class VentasCarritoRegistration {
     private VentasCabecera instance;
     private List<VentasDetalles> detalles;
     private Clientes cliente;
+    private SqlSession sqlSession;
 	
     @PostConstruct
     public void start(){
     	instance = new VentasCabecera();
     	detalles = new ArrayList<VentasDetalles>();
+    	sqlSession = new MyBatisUtil().getSession();
     }
     
     
@@ -64,11 +73,13 @@ public class VentasCarritoRegistration {
     	instance.setFechaCreacion(new Date());
     	instance.setFechaActualizacion(new Date());
     	trx.begin();
-    	em.persist(instance);
+    	VentasCabeceraMapper ventasCabeceraMapper = sqlSession.getMapper(VentasCabeceraMapper.class);
+    	ventasCabeceraMapper.insertVentaCabecera(instance);
     }
     
     public void agregarDetalleACarrito(VentasDetalles detalle){
-    	detalle.setProducto(em.find(Productos.class, detalle.getProducto().getIdProducto()));
+    	ProductosMapper productosMapper = sqlSession.getMapper(ProductosMapper.class);
+    	detalle.setProducto(productosMapper.getProductoById(detalle.getProducto().getIdProducto()));
     	Boolean existe = false;
     	for(VentasDetalles det : detalles){
     		if(det.getProducto().getIdProducto().equals(detalle.getProducto().getIdProducto())){
@@ -77,11 +88,13 @@ public class VentasCarritoRegistration {
     	}
     	if(!existe){
     		detalle.setVentasCabecera(instance);
-    		em.persist(detalle);
+    		VentasDetallesMapper ventasDetallesMapper = sqlSession.getMapper(VentasDetallesMapper.class);
+    		ventasDetallesMapper.insertVentaDetalle(detalle);
     		detalles.add(detalle);
     	}
     }
     
+    /*
     public void eliminarDetalleDeCarrito(VentasDetalles detalle){
     	detalle.setProducto(em.find(Productos.class, detalle.getProducto().getIdProducto()));
     	int i = 0, pos = -1;
@@ -106,6 +119,7 @@ public class VentasCarritoRegistration {
     		}
     	}
     }
+    */
     
     @Remove
     public String register() throws Exception{
@@ -132,8 +146,15 @@ public class VentasCarritoRegistration {
     	instance.setFechaCreacion(new Date());
     	instance.setFechaActualizacion(new Date());
         log.info("Registering nueva Venta");
-        em.persist(instance);
-        trx.commit();
+        VentasCabeceraMapper ventasCabeceraMapper = sqlSession.getMapper(VentasCabeceraMapper.class);
+        ventasCabeceraMapper.updateVentaCabecera(instance);
+        sqlSession.commit();
+        try {
+			trx.commit();
+		} catch (Exception e) {
+			
+			e.printStackTrace();
+		}
         //ventasEventSrc.fire(instance);
         //actualizarStock();
         //actualizarSaldoCliente();
@@ -143,6 +164,7 @@ public class VentasCarritoRegistration {
     
     
     public void cancelar() throws Exception{
+    	sqlSession.rollback();
     	trx.rollback();
     }
     
@@ -163,8 +185,13 @@ public class VentasCarritoRegistration {
     
     
     public Double obtenerTotal(Long cant, Long id){
-    	Productos prod = em.find(Productos.class, id);
-    	return prod.getPrecio()*cant;
+    	Productos prod = null;
+    	ProductosMapper productosMapper = sqlSession.getMapper(ProductosMapper.class);
+    	prod = productosMapper.getProductoById(id);
+    	if(prod != null)
+    		return prod.getPrecio()*cant;
+    	else
+    		return 0D;
     }
     
     
@@ -178,8 +205,12 @@ public class VentasCarritoRegistration {
 		return cliente;
 	}
 	public void setCliente(Clientes cliente) {
-		cliente = em.find(Clientes.class, cliente.getIdCliente());
-		this.cliente = cliente;
+		Clientes cli = null;
+		ClientesMapper clienteMapper = sqlSession.getMapper(ClientesMapper.class);
+		cli = clienteMapper.getClienteById(cliente.getIdCliente());
+		if(cli != null){
+			this.cliente = cli;
+		}
 	}
 
 	public VentasCabecera getInstance() {

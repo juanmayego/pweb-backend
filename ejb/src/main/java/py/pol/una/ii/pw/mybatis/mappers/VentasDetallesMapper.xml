@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+   
+<mapper namespace="py.pol.una.ii.pw.mybatis.mappers.VentasDetallesMapper">
+ 
+  	<insert id="insertVentaDetalle" parameterType="py.pol.una.ii.pw.model.VentasDetalles" useGeneratedKeys="true" keyProperty="idVentasDetalle">
+	  INSERT INTO ventas_detalles(id_ventas_det, cantidad, id_producto, id_ventas_cab)
+	  VALUES(nextval('venta_det_id_venta_det_seq'), #{cantidad}, 
+	  #{producto.idProducto}, #{ventasCabecera.idVentasCabecera})
+	</insert>
+	
+</mapper> 
+

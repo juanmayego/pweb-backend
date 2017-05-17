@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+   
+<mapper namespace="py.pol.una.ii.pw.mybatis.mappers.VentasCabeceraMapper">
+ 
+  	<select id="getVentaById" parameterType="java.lang.Long" resultMap="VentasCabeceraResult">
+		SELECT
+			cc.*,
+			pv.nombre,
+			pv.direccion,
+			pv.ci_numero,
+			pv.email,
+			vd.id_ventas_det,
+			vd.cantidad,
+			vd.id_producto,
+			p.descripcion,
+			p.precio
+		FROM
+		ventas_cabecera cc
+		join ventas_detalles vd on vd.id_ventas_cab = cc.id_ventas_cab
+		join cliente pv on pv.id_cliente = cc.id_cliente
+		join productos p on p.id_producto = vd.id_producto
+		WHERE
+		cc.id_ventas_cab = #{idVentasCabecera}
+	</select>
+	
+	<resultMap type="py.pol.una.ii.pw.model.VentasCabecera" id="VentasCabeceraResult">
+	  <id property="idVentasCabecera" column="id_ventas_cab"/>
+	  <result property="montoTotal" column="monto_total"/>
+	  <result property="fechaDocumento" column="fecha_documento"/>
+	  <result property="fechaActualizacion" column="fecha_actualizacion"/>
+	  <result property="fechaCreacion" column="fecha_creacion"/>
+	  
+	  <association property="clientes" javaType="py.pol.una.ii.pw.model.Clientes">
+	  	<id property="idCliente" column="id_cliente"/>
+	    <result property="ciNro" column="ci_numero"/>
+	    <result property="email" column="email"/>
+	    <result property="nombre" column="nombre"/>
+	    <result property="direccion" column="direccion"/>
+	  </association>
+	  
+	  
+	  <collection property="ventasDetalles" ofType="py.pol.una.ii.pw.model.VentasDetalles">
+		    <id property="idVentasDetalle" column="id_ventas_det"/>
+		    <result property="cantidad" column="cantidad"/>
+		    <association property="producto" javaType="py.pol.una.ii.pw.model.Productos">
+			  	<id property="idProducto" column="id_producto"/>
+			    <result property="descripcion" column="descripcion"/>
+			    <result property="precio" column="precio"/>
+	  		</association>
+  	 </collection>
+  	 
+  	 
+	</resultMap>
+   
+	<select id="getAllVentas" resultMap="VentasCabeceraResult" parameterType="py.pol.una.ii.pw.util.PaginacionVentas">
+		SELECT
+			cc.*,
+			pv.nombre,
+			pv.direccion,
+			pv.ci_numero,
+			pv.email,
+			vd.id_ventas_det,
+			vd.cantidad,
+			vd.id_producto,
+			p.descripcion,
+			p.precio
+		FROM
+		ventas_cabecera cc
+		join ventas_detalles vd on vd.id_ventas_cab = cc.id_ventas_cab
+		join cliente pv on pv.id_cliente = cc.id_cliente
+		join productos p on p.id_producto = vd.id_producto
+		offset #{desde}
+		limit #{limite}
+	</select>
+	
+	<select id="cantidadRegistrosDeMilCabs" resultType="java.lang.Integer" parameterType="java.lang.Integer">
+		SELECT sum(cantidad) from
+		(SELECT (select count(*) from ventas_detalles vd where vd.id_ventas_cab = cc.id_ventas_cab) as cantidad from ventas_cabecera cc
+			offset #{desde} limit 1000)
+		as x
+	</select>
+	
+	<select id="cantidadVentasCabecera" resultType="java.lang.Integer">
+		SELECT
+			count(*)
+		FROM
+		ventas_cabecera cc
+		join ventas_detalles vd on vd.id_ventas_cab = cc.id_ventas_cab
+		join cliente pv on pv.id_cliente = cc.id_cliente
+		join productos p on p.id_producto = vd.id_producto
+	</select>
+	
+	<insert id="insertVentaCabecera" parameterType="py.pol.una.ii.pw.model.VentasCabecera" useGeneratedKeys="true" keyProperty="idVentasCabecera">
+	  INSERT INTO ventas_cabecera(id_ventas_cab, fecha_documento, fecha_creacion, fecha_actualizacion, monto_total, id_cliente)
+	  VALUES(nextval('venta_cab_id_venta_cab_seq'), #{fechaDocumento}, #{fechaCreacion}, #{fechaActualizacion},
+	  #{montoTotal}, #{clientes.idCliente})
+	</insert>
+   
+	<update id="updateVentaCabecera" parameterType="py.pol.una.ii.pw.model.VentasCabecera">
+		UPDATE ventas_cabecera 
+		SET
+		 monto_total = #{montoTotal},
+		 fecha_actualizacion = #{fechaActualizacion}
+		WHERE id_ventas_cab = #{idVentasCabecera}
+	</update>
+   
+	<!--  <delete id="deleteCliente" parameterType="long">
+		DELETE FROM cliente WHERE id_cliente = #{idCliente}
+	</delete>  -->
+</mapper> 

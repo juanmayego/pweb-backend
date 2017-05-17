@@ -103,9 +103,6 @@
 		WHERE id_compras_cab = #{idComprasCabecera}
 	</update>
    
-	<!--  <delete id="deleteProveedor" parameterType="long">
-		DELETE FROM proveedor WHERE id_proveedor = #{idProveedor}
-	</delete>  -->
 </mapper> 
 
 

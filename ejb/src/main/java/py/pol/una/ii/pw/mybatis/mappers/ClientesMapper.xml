@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+   
+<mapper namespace="py.pol.una.ii.pw.mybatis.mappers.ClientesMapper">
+ 
+  	<select id="getClienteById" parameterType="java.lang.Long" resultType="py.pol.una.ii.pw.model.Clientes">
+	    select id_proveedor as idProveedor,
+				 direccion,
+				 nombre,
+				 ci_numero,
+				 email,
+				 numero
+				 fecha_actualizacion as fechaActualizacion,
+				 fecha_creacion as fechaCreacion
+		from cliente
+		where id_cliente = #{idCliente}
+	</select>
+  	<!-- Instead of referencing Fully Qualified Class Names we can register Aliases in mybatis-config.xml and use Alias names. -->
+	<resultMap type="py.pol.una.ii.pw.model.Clientes" id="ClienteResult">
+	  <id property="idCliente" column="id_cliente"/>
+	  <result property="direccion" column="direccion"/>
+	  <result property="nombre" column="nombre"/>
+	  <result property="ciNro" column="ci_numero"/>
+	  <result property="email" column="email"/>
+	  <result property="numero" column="numero"/>
+	  <result property="fechaActualizacion" column="fecha_actualizacion"/>
+	  <result property="fechaCreacion" column="fecha_creacion"/>    
+	</resultMap>
+   
+	<select id="getAllCliente" resultMap="ClienteResult">
+		SELECT * FROM cliente order by nombre
+	</select>
+	
+	<select id="filterCliente" resultMap="ClienteResult" parameterType="java.lang.String">
+		SELECT * FROM cliente where nombre like #{filter} order by nombre
+	</select>
+	
+	<select id="checkFkCliente" resultType="int" parameterType="py.pol.una.ii.pw.model.Clientes">
+		SELECT count(*) FROM productos where id_cliente = #{idCliente} 	
+	</select>
+   
+	<insert id="insertCliente" parameterType="py.pol.una.ii.pw.model.Clientes" useGeneratedKeys="true" keyProperty="idCliente">
+	  INSERT INTO cliente(id_cliente, direccion, nombre, ci_numero, email, fecha_actualizacion, fecha_creacion, numero)
+	  VALUES(nextval('cliente_id_cliente_seq'),#{direccion}, #{nombre}, #{ciNro}, #{email}, #{fechaActualizacion},#{fechaCreacion}, #{numero})
+	</insert>
+   
+	<update id="updateCliente" parameterType="py.pol.una.ii.pw.model.Clientes">
+		UPDATE cliente 
+		SET
+		 direccion= #{direccion},
+		 nombre = #{nombre},
+		 ci_numero = #{ciNro},
+		 email = #{email},
+		 fecha_actualizacion = #{fechaActualizacion}
+		WHERE id_cliente = #{idCliente}
+	</update>
+   
+	<delete id="deleteCliente" parameterType="long">
+		DELETE FROM cliente WHERE id_cliente = #{idCliente}
+	</delete>
+</mapper>

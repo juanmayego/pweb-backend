@@ -17,14 +17,21 @@
 package py.pol.una.ii.pw.service;
 
 import py.pol.una.ii.pw.model.Clientes;
+import py.pol.una.ii.pw.model.ComprasDetalles;
 import py.pol.una.ii.pw.model.Productos;
 import py.pol.una.ii.pw.model.VentasCabecera;
 import py.pol.una.ii.pw.model.VentasDetalles;
+import py.pol.una.ii.pw.mybatis.MyBatisUtil;
+import py.pol.una.ii.pw.mybatis.mappers.ProductosMapper;
+import py.pol.una.ii.pw.mybatis.mappers.VentasCabeceraMapper;
+import py.pol.una.ii.pw.mybatis.mappers.VentasDetallesMapper;
 
 import javax.ejb.Stateless;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+
+import org.apache.ibatis.session.SqlSession;
 
 import java.util.Date;
 import java.util.logging.Logger;
@@ -53,14 +60,31 @@ public class VentasRegistration {
     	instance.setFechaCreacion(new Date());
     	instance.setFechaActualizacion(new Date());
         log.info("Registering " + instance.getFechaDocumento());
-        em.persist(instance);
+        SqlSession sqlSession = new MyBatisUtil().getSession();
+        
+    	try
+        {
+        	VentasCabeceraMapper ventasCabeceraMapper = sqlSession.getMapper(VentasCabeceraMapper.class);
+        	VentasDetallesMapper ventasDetallesMapper = sqlSession.getMapper(VentasDetallesMapper.class);
+        	ventasCabeceraMapper.insertVentaCabecera(instance);
+        	
+        	for(VentasDetalles det : instance.getVentasDetalles()){
+    			det.setVentasCabecera(instance);
+    			ventasDetallesMapper.insertVentaDetalle(det);
+    		}
+            
+            sqlSession.commit();
+        } finally
+        {
+            sqlSession.close();
+        }
         ventasEventSrc.fire(instance);
-        actualizarStock(instance);
-        actualizarSaldoCliente(instance);
+        //actualizarStock(instance);
+        //actualizarSaldoCliente(instance);
     }
     
     
-    private void actualizarStock(VentasCabecera venta){
+    /*private void actualizarStock(VentasCabecera venta){
     	for(VentasDetalles det : venta.getVentasDetalles()){
     		Productos producto = em.find(Productos.class, det.getProducto().getIdProducto());
     		producto.setCantidadDisponible(producto.getCantidadDisponible() - det.getCantidad());
@@ -74,11 +98,23 @@ public class VentasRegistration {
     	Clientes cliente = em.find(Clientes.class, venta.getClientes().getIdCliente());
     	cliente.setSaldoVentas(cliente.getSaldoVentas()+venta.getMontoTotal());
     }
-    
+    */
     
     public Double obtenerTotal(Long cant, Long id){
-    	Productos prod = em.find(Productos.class, id);
-    	return prod.getPrecio()*cant;
+    	SqlSession sqlSession = new MyBatisUtil().getSession();
+    	Productos prod = null;
+    	try
+        {
+        	ProductosMapper productosMapper = sqlSession.getMapper(ProductosMapper.class);
+        	prod = productosMapper.getProductoById(id);
+        } finally
+        {
+            sqlSession.close();
+        }
+    	if(prod != null)
+    		return prod.getPrecio()*cant;
+    	else
+    		return 0D;
     }
     
     
