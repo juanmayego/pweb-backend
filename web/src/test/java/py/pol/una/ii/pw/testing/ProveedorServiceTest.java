@@ -19,91 +19,81 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import py.pol.una.ii.pw.data.ClientesRepository;
-import py.pol.una.ii.pw.model.Clientes;
-import py.pol.una.ii.pw.rest.ClientesResourceRESTService;
-import py.pol.una.ii.pw.service.ClientesRegistration;
+import py.pol.una.ii.pw.data.ProveedorRepository;
+import py.pol.una.ii.pw.model.Proveedor;
+import py.pol.una.ii.pw.rest.ProveedorResourceRESTService;
+import py.pol.una.ii.pw.service.ProveedorRegistration;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ClientesServiceTest {
-	
-	public static final String PATH = "/clientes";
+public class ProveedorServiceTest {
+	public static final String PATH = "/proveedores";
 	public static InMemoryRestServer server;
+	private Proveedor model;
 	
-	private static final Long idCliente = 1L;
-	private static final String nombre = "Juan";
-	private static final String ciNro = "12345679-1";
-	private static final String  email = "jbritez@email.com";
-	private static final String direccion = "Palo Santo";
-	private static final Double saldoVentas = 0D;
-	private static final String numero = "0961963741";
+	private static final Long idProveedor = 1L ;
+	private static final String nombre = "Proveedor 1";
+	private static final String ruc = "45687912-1";
+	private static final String direccion = "lejos";
 	private static final Date fechaCreacion = new Date();
 	private static final Date fechaActualizacion = new Date();
 	
-	
-	private Clientes model;
-	
 	@InjectMocks
-	private ClientesResourceRESTService service = new ClientesResourceRESTService();
+	private ProveedorResourceRESTService service = new ProveedorResourceRESTService();
 	
 	@Mock
-	private ClientesRegistration registration;
+	private ProveedorRegistration registration;
 	
 	@Mock
-	private ClientesRepository repository;
+	private ProveedorRepository repository;
 	
 	@Before
-    public void prepare() throws Exception{
+	public void prepare() throws Exception{
 		server = InMemoryRestServer.create(service);
 		
-		model = new Clientes();
-        
-		model.setIdCliente(idCliente);
-		model.setNombre(nombre);
-		model.setDireccion(direccion);
-		model.setCiNro(ciNro);
-		model.setEmail(email);
-		model.setFechaActualizacion(fechaActualizacion);
-		model.setFechaCreacion(fechaCreacion);
-		model.setSaldoVentas(saldoVentas);
-		model.setNumero(numero);
+		model = new Proveedor();
 		
-        List<Clientes> allClientes = new ArrayList<Clientes>();
-        allClientes.add(model);
-        when(repository.findAllOrderedByName(anyString())).thenReturn(allClientes);
+		model.setIdProveedor(idProveedor);
+		model.setNombre(nombre);
+		model.setRuc(ruc);
+		model.setDireccion(direccion);
+		model.setFechaCreacion(fechaCreacion);
+		model.setFechaActualizacion(fechaActualizacion);
+		
+		List<Proveedor> allProveedores = new ArrayList<Proveedor>();
+		allProveedores.add(model);
+        when(repository.findAllOrderedByName(anyString())).thenReturn(allProveedores);
         when(repository.findById(1L)).thenReturn(model);
         when(repository.findById(15L)).thenReturn(null);
-        
-        
+		 
 	}
-	
+
 	@After
     public void afterClass() throws Exception {
         server.close();
     }
 	
 	@Test
-    public void testGetClientesAll() throws Exception {
-        List<Clientes> todosLosUsuarios = service.listAllClientes(null);
-        Assert.assertNotNull(todosLosUsuarios);
-        Assert.assertTrue(todosLosUsuarios.size() > 0);
-        Assert.assertEquals("Juan",todosLosUsuarios.get(0).getNombre());
+    public void testGETAllProveedores() throws Exception {
+        List<Proveedor> allProveedores = service.listAllProveedores(null);
+        Assert.assertNotNull(allProveedores);
+        Assert.assertTrue(allProveedores.size() > 0);
+        Assert.assertEquals(nombre ,allProveedores.get(0).getNombre());
     }
 	
 	@Test
-    public void testGetClientesById() throws Exception {
+    public void testGETProveedorById() throws Exception {
 		Response response = server.newRequest(PATH+"/1").request().get();
 		Assert.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
     }
 	
 	@Test
-    public void testGetClientesByIdNoExist() throws Exception {
+    public void testGETProveedorByIdNoExist() throws Exception {
 		Response response = server.newRequest(PATH+"/15").request().get();
 		Assert.assertEquals(Response.Status.NOT_FOUND.getStatusCode(), response.getStatus());
     }
 	
 	@Test
-	public void addClientes(){
+	public void TestAddProveedor(){
 		Response response = server.newRequest(PATH).request().buildPost(Entity.json(model)).invoke();
 		Assert.assertEquals("OK: 200",
 				Response.Status.OK.getStatusCode(),
@@ -111,7 +101,7 @@ public class ClientesServiceTest {
 	}
 	
 	@Test
-	public void modificarClienteRetornaSuccess() throws Exception {
+	public void TestPUTProveedorOK() throws Exception {
 		Response response = server.newRequest(PATH+"/")
 				.request().buildPut(Entity.json(model)).invoke();
 		Assert.assertEquals("OK: 200",
@@ -120,12 +110,12 @@ public class ClientesServiceTest {
 	}
 
 	@Test
-	public void borrarClienteRetornaSuccess() throws Exception {
-		Response response = server.newRequest(PATH+"/"+String.valueOf(model.getIdCliente()))
+	public void TestDELETEProveedorOK() throws Exception {
+		Response response = server.newRequest(PATH+"/"+String.valueOf(model.getIdProveedor()))
 				.request().buildDelete().invoke();
 		Assert.assertEquals("Ok: 200",
 				Response.Status.OK.getStatusCode(),
 				response.getStatus());
 	}
-	
+		
 }

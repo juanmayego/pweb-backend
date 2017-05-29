@@ -17,57 +17,70 @@
 package py.pol.una.ii.pw.data;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
+
+
+import org.apache.ibatis.session.SqlSession;
 
 import java.util.List;
 
-import py.pol.una.ii.pw.model.Clientes;
+import py.pol.una.ii.pw.model.Clientes;import py.pol.una.ii.pw.mybatis.MyBatisUtil;
+import py.pol.una.ii.pw.mybatis.mappers.ClientesMapper;
 
 @ApplicationScoped
 public class ClientesRepository {
 
-    @Inject
-    private EntityManager em;
 
     public Clientes findById(Long id) {
-        return em.find(Clientes.class, id);
+    	SqlSession sqlSession = new MyBatisUtil().getSession();
+    	Clientes tmp = null;
+    	if(sqlSession != null){
+    		try
+            {
+            	ClientesMapper clienteMapper = sqlSession.getMapper(ClientesMapper.class);
+            	tmp = clienteMapper.getClienteById(id);
+            } finally
+            {
+                sqlSession.close();
+            }
+    	}
+    	return tmp;
     }
     
-    public List<Clientes> filter(String values){
-    	TypedQuery<Clientes> q = em.createQuery("Select c from Clientes c"
-    			+ " where lower(nombre) like lower(:valor)", Clientes.class);
-    	q.setParameter("valor", "%"+values+"%");
-    	return q.getResultList();
-    }
+//    public List<Clientes> filter(String values){
+//    	TypedQuery<Clientes> q = em.createQuery("Select c from Clientes c"
+//    			+ " where lower(nombre) like lower(:valor)", Clientes.class);
+//    	q.setParameter("valor", "%"+values+"%");
+//    	return q.getResultList();
+//    }
+//
+//    public Clientes findByEmail(String email) {
+//        CriteriaBuilder cb = em.getCriteriaBuilder();
+//        CriteriaQuery<Clientes> criteria = cb.createQuery(Clientes.class);
+//        Root<Clientes> cliente = criteria.from(Clientes.class);
+//        // Swap criteria statements if you would like to try out type-safe criteria queries, a new
+//        // feature in JPA 2.0
+//        // criteria.select(member).where(cb.equal(member.get(Member_.email), email));
+//        criteria.select(cliente).where(cb.equal(cliente.get("email"), email));
+//        return em.createQuery(criteria).getSingleResult();
+//    }
 
-    public Clientes findByEmail(String email) {
-        CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<Clientes> criteria = cb.createQuery(Clientes.class);
-        Root<Clientes> cliente = criteria.from(Clientes.class);
-        // Swap criteria statements if you would like to try out type-safe criteria queries, a new
-        // feature in JPA 2.0
-        // criteria.select(member).where(cb.equal(member.get(Member_.email), email));
-        criteria.select(cliente).where(cb.equal(cliente.get("email"), email));
-        return em.createQuery(criteria).getSingleResult();
-    }
-
-    public List<Clientes> findAllOrderedByName(String nombre) {
-        String query = "Select c from Clientes c";
-        if(nombre!=null){
-        	query += " where lower(c.nombre) like lower(:valor)";
-        }
-        query +=" order by c.nombre";
-        TypedQuery<Clientes> tq = em.
-        		createQuery(query, 
-        				Clientes.class);
-    	if(nombre!=null){
-    		tq.setParameter("valor", "%"+nombre+"%");
+    public List<Clientes> findAllOrderedByName(String queryx) {
+    	SqlSession sqlSession = new MyBatisUtil().getSession();
+    	List<Clientes> tq = null;
+    	if(sqlSession != null){
+    		try
+            {
+    			ClientesMapper clienteMapper = sqlSession.getMapper(ClientesMapper.class);
+            	if(queryx != null){
+            		tq = clienteMapper.filterCliente("%"+queryx+"%");
+            	}else{
+            		tq = clienteMapper.getAllCliente();
+            	}
+            } finally
+            {
+                sqlSession.close();
+            }
     	}
-    	return tq.getResultList();
+    	return tq;
     }
 }

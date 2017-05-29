@@ -48,30 +48,6 @@ public class ComprasCabeceraResourceRESTService {
         return compras;
     }
     
-    
-    /*@SuppressWarnings("resource")
-	@GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public List<ComprasCabeceraDTO> listAllCompras(){
-
-    	try {
-    		List<ComprasCabeceraDTO> resultados = new ArrayList<ComprasCabeceraDTO>();
-    		Gson gson = new GsonBuilder().create();
-			String ruta =  repository.findAllCabeceras();
-			FileReader fr = new FileReader(ruta);
-		    BufferedReader br = new BufferedReader(fr);
-		    String linea;
-		    while((linea = br.readLine()) != null){
-		    	ComprasCabeceraDTO compra = gson.fromJson(linea, ComprasCabeceraDTO.class);
-		    	resultados.add(compra);
-		    }
-		    return resultados;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
-    }*/
-    
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response allCompras(){

@@ -1,37 +1,43 @@
 package py.pol.una.ii.pw.data;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.math.BigInteger;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+import javax.json.Json;
+import javax.json.stream.JsonGenerator;
 
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
-
-import com.google.gson.Gson;
-
+import org.apache.ibatis.session.SqlSession;
 import py.pol.una.ii.pw.model.VentasCabecera;
 import py.pol.una.ii.pw.model.VentasDetalles;
-import py.pol.una.ii.pw.model.dto.VentasCabeceraDTO;
-import py.pol.una.ii.pw.model.dto.VentasDetallesDTO;
+import py.pol.una.ii.pw.mybatis.MyBatisUtil;
+import py.pol.una.ii.pw.mybatis.mappers.VentasCabeceraMapper;
+import py.pol.una.ii.pw.util.PaginacionVentas;
 
 
 public class VentasRepository {
-	@Inject
-    private EntityManager em;
+	
 
-	private Integer limite = 10;
-    public VentasCabecera findById(Long id) {
-        return em.find(VentasCabecera.class, id);
+	private Integer limite = 1000;
+    
+	public VentasCabecera findById(Long id) {
+		VentasCabecera tmp = null;
+        SqlSession sqlSession = new MyBatisUtil().getSession();
+    	try
+        {
+        	VentasCabeceraMapper ventasCabeceraMapper = sqlSession.getMapper(VentasCabeceraMapper.class);
+        	
+        	tmp = ventasCabeceraMapper.getCompraById(id);
+        	
+        } finally
+        {
+            sqlSession.close();
+        }
+    	
+    	return tmp;
     }
-    @SuppressWarnings("unchecked")
+    
+	/*
+	@SuppressWarnings("unchecked")
 	public String findAllCabeceras() throws IOException {
     	Gson otro = new Gson();
     	Long totalRegistros = obtenerCantidad();
@@ -79,30 +85,120 @@ public class VentasRepository {
 
     }
     
+	*/
     
-    public Long obtenerCantidad(){
+	public void streamVentas(OutputStream stream){
+    	JsonGenerator generator = Json.createGenerator(stream);
+    	SimpleDateFormat f = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
+    	Integer totalRegistros = obtenerCantidad();
+    	SqlSession sqlSession = new MyBatisUtil().getSession();
+    	PaginacionVentas page = new PaginacionVentas();
+    	Integer i=0;
+    	page.setDesde(0);
+    	page.setLimite(obtenerCantidadRegistros(i*1000));
     	
-    	TypedQuery<Long> tq = em.createQuery(
-    			"Select count(c) from VentasCabecera c",
-    			Long.class);
-    	return tq.getSingleResult();
-    	
-    }
-    
-    public List<VentasDetallesDTO> obtenerDetalle(VentasCabecera compra){
-    	TypedQuery<VentasDetalles> tq = em.createQuery(
-        		"Select c from VentasDetalles c where c.ventasCabecera.idVentasCabecera = :compra", 
-        		VentasDetalles.class);
-    	tq.setParameter("compra", compra.getIdVentasCabecera());
-    	List<VentasDetalles> result = tq.getResultList();
-    	List<VentasDetallesDTO> detalles = new ArrayList<VentasDetallesDTO>();
-    	for(VentasDetalles det : result){
-    		VentasDetallesDTO tmp = new VentasDetallesDTO();
-    		tmp.setIdVentasDetalle(det.getIdVentasDetalle());
-    		tmp.setCantidad(det.getCantidad());
-    		tmp.setProducto(det.getProducto());
-    		detalles.add(tmp);
+    	if(totalRegistros!=null){
+    		System.out.println("Total "+totalRegistros);
+    	}else{
+    		System.out.println("HAY UN ERROR EN TOTAL");
     	}
-    	return detalles;//tq.getResultList();
+    	
+    	if(page!=null && page.getDesde()!=null){
+    		System.out.println("DESDE "+page.getDesde());
+    	}else{
+    		System.out.println("HAY UN ERROR EN DESDE");
+    	}
+    	
+    	if(page!=null && page.getLimite()!=null){
+    		System.out.println("LIMTE "+page.getLimite());
+    	}else{
+    		System.out.println("HAY UN ERROR EN LIMITE");
+    	}
+    	generator
+        .writeStartArray();
+    	while(page.getLimite() != null && totalRegistros >= (page.getDesde()+page.getLimite())){
+    		List<VentasCabecera> listVentas = null;
+        	
+        	
+        	VentasCabeceraMapper ventasCabeceraMapper = sqlSession.getMapper(VentasCabeceraMapper.class);
+        	listVentas = ventasCabeceraMapper.getAllVentas(page);
+  
+        	for(VentasCabecera aux : listVentas){
+				
+        		generator.writeStartObject();
+					generator.write("idVentasCabecera", aux.getIdVentasCabecera());
+					generator.write("cliente", aux.getClientes().getNombre());
+					generator.write("montoTotal", aux.getMontoTotal());
+					generator.write("fechaDocumento", f.format(aux.getFechaDocumento()));
+					generator.write("fechaCreacion", f.format(aux.getFechaCreacion()));
+					generator.write("fechaActualizacion", f.format(aux.getFechaActualizacion()));
+					generator.writeStartArray("ventasDetalles");
+					for(VentasDetalles detalle : aux.getVentasDetalles()){
+						generator.writeStartObject();
+						generator.write("producto", detalle.getProducto().getDescripcion());
+						generator.write("cantidad", detalle.getCantidad());
+						generator.writeEnd();
+					}
+					generator.writeEnd();
+				generator.writeEnd();
+			}
+			i++;
+			page.setDesde(page.getLimite());
+			page.setLimite(obtenerCantidadRegistros(i*1000));
+			System.out.println(i*limite+" registros cargados");
+		}
+    	generator.writeEnd();
+    	generator.flush();
+    	generator.close();
+    	sqlSession.close();
     }
+	
+	public Integer obtenerCantidad(){
+    	Integer tmp = null;
+    	SqlSession sqlSession = new MyBatisUtil().getSession();
+    	try
+        {
+        	VentasCabeceraMapper ventasCabeceraMapper = sqlSession.getMapper(VentasCabeceraMapper.class);
+        	tmp = ventasCabeceraMapper.cantidadVentasCabecera();
+        } finally
+        {
+            sqlSession.close();
+        }
+    	return tmp;
+    }
+	
+	public Integer obtenerCantidadRegistros(Integer offset){
+    	Integer tmp = null;
+    	SqlSession sqlSession = new MyBatisUtil().getSession();
+    	try
+        {
+        	VentasCabeceraMapper ventasCabeceraMapper = sqlSession.getMapper(VentasCabeceraMapper.class);
+        	tmp = ventasCabeceraMapper.cantidadRegistrosDeMilCabs(offset);
+        	if(tmp != null){
+        		System.out.println("todo ok");
+        	}
+        } finally
+        {
+            sqlSession.close();
+        }
+    	return tmp;
+    }
+    
+    
+//    public List<VentasDetallesDTO> obtenerDetalle(VentasCabecera compra){
+//    	TypedQuery<VentasDetalles> tq = em.createQuery(
+//        		"Select c from VentasDetalles c where c.ventasCabecera.idVentasCabecera = :compra", 
+//        		VentasDetalles.class);
+//    	tq.setParameter("compra", compra.getIdVentasCabecera());
+//    	List<VentasDetalles> result = tq.getResultList();
+//    	List<VentasDetallesDTO> detalles = new ArrayList<VentasDetallesDTO>();
+//    	for(VentasDetalles det : result){
+//    		VentasDetallesDTO tmp = new VentasDetallesDTO();
+//    		tmp.setIdVentasDetalle(det.getIdVentasDetalle());
+//    		tmp.setCantidad(det.getCantidad());
+//    		tmp.setProducto(det.getProducto());
+//    		detalles.add(tmp);
+//    	}
+//    	return detalles;//tq.getResultList();
+//    }
 }

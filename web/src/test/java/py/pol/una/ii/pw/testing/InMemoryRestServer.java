@@ -1,6 +1,7 @@
 package py.pol.una.ii.pw.testing;
 
 import javax.ws.rs.core.Application;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.HashSet;
@@ -24,12 +25,14 @@ import org.jboss.resteasy.plugins.server.tjws.TJWSEmbeddedJaxrsServer;
  * @author <a href="mailto:mpaluch@paluch.biz">Mark Paluch</a>
  * @since 03.02.15 08:42
  */
+@SuppressWarnings("rawtypes")
 public class InMemoryRestServer implements AutoCloseable {
 
     private int port;
 
     private Set<Object> objects = new HashSet<Object>();
-    private Set<Class> classes = new HashSet<Class>();
+    
+	private Set<Class> classes = new HashSet<Class>();
 
     private TJWSEmbeddedJaxrsServer server;
     private SecurityDomain securityDomain;
