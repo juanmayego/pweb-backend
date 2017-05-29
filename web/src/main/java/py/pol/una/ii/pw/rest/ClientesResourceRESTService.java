@@ -90,23 +90,15 @@ public class ClientesResourceRESTService {
     	
         Response.ResponseBuilder builder = null;
         try {
-            // Validates member using bean validation
-            //validateMember(member);
-
             registration.register(cliente);
-
-            // Create an "ok" response
             builder = Response.ok();
         } catch (ConstraintViolationException ce) {
-            // Handle bean validation issues
             builder = createViolationResponse(ce.getConstraintViolations());
         } catch (ValidationException e) {
-            // Handle the unique constrain violation
             Map<String, String> responseObj = new HashMap<String, String>();
             responseObj.put("email", "Email taken");
             builder = Response.status(Response.Status.CONFLICT).entity(responseObj);
         } catch (Exception e) {
-            // Handle generic exceptions
             Map<String, String> responseObj = new HashMap<String, String>();
             responseObj.put("error", e.getMessage());
             builder = Response.status(Response.Status.BAD_REQUEST).entity(responseObj);

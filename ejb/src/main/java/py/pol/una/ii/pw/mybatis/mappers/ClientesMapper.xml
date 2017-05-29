@@ -4,15 +4,8 @@
    
 <mapper namespace="py.pol.una.ii.pw.mybatis.mappers.ClientesMapper">
  
-  	<select id="getClienteById" parameterType="java.lang.Long" resultType="py.pol.una.ii.pw.model.Clientes">
-	    select id_proveedor as idProveedor,
-				 direccion,
-				 nombre,
-				 ci_numero,
-				 email,
-				 numero
-				 fecha_actualizacion as fechaActualizacion,
-				 fecha_creacion as fechaCreacion
+  	<select id="getClienteById" parameterType="java.lang.Long" resultMap="ClienteResult">
+	    select *
 		from cliente
 		where id_cliente = #{idCliente}
 	</select>

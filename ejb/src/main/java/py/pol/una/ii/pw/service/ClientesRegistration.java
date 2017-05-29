@@ -46,10 +46,7 @@ public class ClientesRegistration {
     public void register(Clientes cliente) throws Exception {
     	cliente.setFechaCreacion(new Date());
     	cliente.setFechaActualizacion(new Date());
-        
-
     	SqlSession sqlSession = new MyBatisUtil().getSession();
-        
     	try
         {
         	ClientesMapper clienteMapper = sqlSession.getMapper(ClientesMapper.class);

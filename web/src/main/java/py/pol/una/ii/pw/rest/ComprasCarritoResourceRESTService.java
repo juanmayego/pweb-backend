@@ -66,7 +66,8 @@ public class ComprasCarritoResourceRESTService {
 		
 				
 		try {
-			registration.initCompra(compra);
+			if(compra != null )
+				registration.initCompra(compra);
 			builder = Response.ok();
 		} catch (Exception e) {
 
@@ -101,7 +102,7 @@ public class ComprasCarritoResourceRESTService {
 		}
 		
 		try {
-			String respuesta = registration.register();
+			String respuesta = registration.register();			
 			if(respuesta.equals("persisted")){
 				registration.finish();
 				builder = Response.ok();
@@ -118,7 +119,6 @@ public class ComprasCarritoResourceRESTService {
 				builder = Response.status(Response.Status.CONFLICT).entity(
 						responseObj);
 			}
-			
 		} catch (ConstraintViolationException ce) {
 			// Handle bean validation issues
 			builder = createViolationResponse(ce.getConstraintViolations());
@@ -127,6 +127,12 @@ public class ComprasCarritoResourceRESTService {
 			Map<String, String> responseObj = new HashMap<String, String>();
 			responseObj.put("email", "Email taken");
 			builder = Response.status(Response.Status.CONFLICT).entity(
+					responseObj);
+		} catch (NullPointerException e) {
+			// Handle generic exceptions
+			Map<String, String> responseObj = new HashMap<String, String>();
+			responseObj.put("error", e.getMessage());
+			builder = Response.status(Response.Status.BAD_REQUEST).entity(
 					responseObj);
 		} catch (Exception e) {
 			// Handle generic exceptions
@@ -160,10 +166,9 @@ public class ComprasCarritoResourceRESTService {
 				e.printStackTrace();
 			}
 		}
+		if(proveedor != null)
+			registration.setProveedor(proveedor);
 		
-		
-		
-		registration.setProveedor(proveedor);
 		builder = Response.ok();
 		return builder.build();
 	}
@@ -191,16 +196,9 @@ public class ComprasCarritoResourceRESTService {
 				e.printStackTrace();
 			}
 		}
+		if(detalle != null)
+			registration.agregarDetalleACarrito(detalle);
 		
-		registration.agregarDetalleACarrito(detalle);
-		System.out.println("Detalles: ");
-		for(ComprasDetalles det : registration.getDetalles()){
-			System.out.println("Cantidad "+det.getProducto().getDescripcion());
-		}
-		System.out.println("Proveedor: ");
-		if(registration.getProveedor()!=null){
-			System.out.println(registration.getProveedor().getNombre());
-		}
 		builder = Response.ok();
 		return builder.build();
 	}

@@ -82,7 +82,13 @@ public class VentasCarritoResourceRESTService{
 				builder = Response.status(Response.Status.CONFLICT).entity(
 						responseObj);
 			}
-			
+		
+		} catch (NullPointerException ce) {
+			// Handle bean validation issues
+			Map<String, String> responseObj = new HashMap<String, String>();
+			responseObj.put("error", ce.getMessage());
+			builder = Response.status(Response.Status.BAD_REQUEST).entity(
+					responseObj);
 		} catch (ConstraintViolationException ce) {
 			// Handle bean validation issues
 			builder = createViolationResponse(ce.getConstraintViolations());
@@ -133,6 +139,9 @@ public class VentasCarritoResourceRESTService{
 			registration.cancelar();
 
 			builder = Response.ok();
+		} catch (NullPointerException e) {
+			builder = Response.serverError();
+			e.printStackTrace();
 		} catch (Exception e) {
 
 			builder = Response.serverError();
@@ -164,9 +173,8 @@ public class VentasCarritoResourceRESTService{
 			}
 		}
 		
-		
-		
-		registration.setCliente(cliente);
+		if(cliente != null)
+			registration.setCliente(cliente);
 		builder = Response.ok();
 		return builder.build();
 	}
@@ -197,7 +205,8 @@ public class VentasCarritoResourceRESTService{
 		
 		
 		try {
-			registration.initVenta(venta);
+			if(venta != null)
+				registration.initVenta(venta);
 			builder = Response.ok();
 		} catch (Exception e) {
 
@@ -233,21 +242,15 @@ public class VentasCarritoResourceRESTService{
 			}
 		}
 		
-		registration.agregarDetalleACarrito(detalle);
-		System.out.println("Detalles: ");
-		for(VentasDetalles det : registration.getDetalles()){
-			System.out.println("Cantidad "+det.getProducto().getDescripcion());
-		}
-		System.out.println("Cliente: ");
-		if(registration.getCliente()!=null){
-			System.out.println(registration.getCliente().getNombre());
-		}
+		if(detalle != null)
+			registration.agregarDetalleACarrito(detalle);
+		
 		builder = Response.ok();
 		return builder.build();
 	}
 	
 	
-	@POST
+	/*@POST
 	@Path("/detalle/modificar")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -281,8 +284,8 @@ public class VentasCarritoResourceRESTService{
 		}
 		builder = Response.ok();
 		return builder.build();
-	}
-	@POST
+	}*/
+	/*@POST
 	@Path("/detalle/borrar")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -317,7 +320,7 @@ public class VentasCarritoResourceRESTService{
 		}
 		builder = Response.ok();
 		return builder.build();
-	}
+	}*/
 	
 	private Response.ResponseBuilder createViolationResponse(
 			Set<ConstraintViolation<?>> violations) {

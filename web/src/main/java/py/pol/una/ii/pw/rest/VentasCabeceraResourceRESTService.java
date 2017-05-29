@@ -16,12 +16,9 @@
  */
 package py.pol.una.ii.pw.rest;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.io.OutputStream;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -36,14 +33,14 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 
-import com.google.gson.Gson;
 import py.pol.una.ii.pw.data.VentasRepository;
 import py.pol.una.ii.pw.model.VentasCabecera;
 import py.pol.una.ii.pw.model.VentasDetalles;
-import py.pol.una.ii.pw.model.dto.VentasCabeceraDTO;
 import py.pol.una.ii.pw.service.VentasRegistration;
 
 
@@ -65,26 +62,19 @@ public class VentasCabeceraResourceRESTService {
 	@Inject
 	VentasRegistration registration;
 	
-	@SuppressWarnings("resource")
+	
 	@GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<VentasCabeceraDTO> listAllCompras(){
-    	try {
-    		List<VentasCabeceraDTO> resultados = new ArrayList<VentasCabeceraDTO>();
-			String ruta =  repository.findAllCabeceras();
-			Gson format = new Gson();
-			FileReader fr = new FileReader(ruta);
-		    BufferedReader br = new BufferedReader(fr);
-		    String linea;
-		    while((linea = br.readLine()) != null){
-		    	VentasCabeceraDTO compra = format.fromJson(linea, VentasCabeceraDTO.class);
-		    	resultados.add(compra);
-		    }
-		    return resultados;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
+    public Response allCompras(){
+		StreamingOutput so = new StreamingOutput() {
+			@Override
+			public void write(OutputStream arg0) throws IOException,
+					WebApplicationException {
+				repository.streamVentas(arg0);
+			}
+		};
+    	
+    	return Response.ok(so).build();
     }
 	/**
 	 * Creates a new member from the values provided. Performs validation, and

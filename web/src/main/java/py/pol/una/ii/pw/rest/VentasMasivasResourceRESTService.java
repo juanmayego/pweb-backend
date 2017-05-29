@@ -11,6 +11,7 @@ import java.util.Map;
 //import java.util.logging.Logger;
 
 
+
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -22,6 +23,7 @@ import javax.ws.rs.core.Response;
 
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 
 import py.pol.una.ii.pw.service.VentasMasivasRegistration;
@@ -48,7 +50,7 @@ public class VentasMasivasResourceRESTService {
 			fileName = getFileName(header);
 			InputStream inputStream = inputPart.getBody(InputStream.class,null);
 			byte [] bytes = IOUtils.toByteArray(inputStream);
-			fileName = UPLOADED_FILE_PATH + fileName;
+			// fileName = UPLOADED_FILE_PATH + fileName;
 			writeFile(bytes,fileName);
 		  } catch (IOException e) {
 			e.printStackTrace();
@@ -59,7 +61,7 @@ public class VentasMasivasResourceRESTService {
 		try {
 			  String error = "NEXT";
 			  registration.initTransaction();
-		      FileReader fr = new FileReader(fileName);
+		      FileReader fr = new FileReader(UPLOADED_FILE_PATH + FilenameUtils.getName(fileName));
 		      BufferedReader br = new BufferedReader(fr);
 		      String linea;
 		      while((linea = br.readLine()) != null && error.equals("NEXT")){
@@ -99,7 +101,7 @@ public class VentasMasivasResourceRESTService {
     }
 
     private void writeFile(byte[] content, String filename) throws IOException {
-        File file = new File(filename);
+        File file = new File(UPLOADED_FILE_PATH, FilenameUtils.getName(filename));
         if (!file.exists()) {
             System.out.println("not exist> " + file.getAbsolutePath());
             file.createNewFile();
