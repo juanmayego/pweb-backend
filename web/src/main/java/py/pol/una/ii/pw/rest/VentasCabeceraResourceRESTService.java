@@ -40,7 +40,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
 import py.pol.una.ii.pw.data.VentasRepository;
-import py.pol.una.ii.pw.model.ComprasCabecera;
 import py.pol.una.ii.pw.model.VentasCabecera;
 import py.pol.una.ii.pw.model.VentasDetalles;
 import py.pol.una.ii.pw.service.VentasRegistration;
