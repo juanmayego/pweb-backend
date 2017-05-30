@@ -122,6 +122,7 @@
 				<configuration>
 					<!-- Tell Maven we are using EJB 3.1 -->
 					<ejbVersion>3.1</ejbVersion>
+					<skip>true</skip>
 				</configuration>
 			</plugin>
 		</plugins>
