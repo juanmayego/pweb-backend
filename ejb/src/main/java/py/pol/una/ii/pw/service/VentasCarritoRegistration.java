@@ -15,19 +15,15 @@ import javax.ejb.StatefulTimeout;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.transaction.UserTransaction;
 
 import org.apache.ibatis.session.SqlSession;
 
 import py.pol.una.ii.pw.model.Clientes;
 import py.pol.una.ii.pw.model.Productos;
-import py.pol.una.ii.pw.model.Proveedor;
 import py.pol.una.ii.pw.model.VentasCabecera;
 import py.pol.una.ii.pw.model.VentasDetalles;
 import py.pol.una.ii.pw.mybatis.MyBatisUtil;
 import py.pol.una.ii.pw.mybatis.mappers.VentasDetallesMapper;
-import py.pol.una.ii.pw.mybatis.mappers.ComprasCabeceraMapper;
 import py.pol.una.ii.pw.mybatis.mappers.ProductosMapper;
 import py.pol.una.ii.pw.mybatis.mappers.ClientesMapper;
 import py.pol.una.ii.pw.mybatis.mappers.VentasCabeceraMapper;

@@ -9,7 +9,7 @@ import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 //import javax.inject.Inject;
 //import javax.persistence.EntityManager;
-import javax.transaction.UserTransaction;
+
 
 import org.apache.ibatis.session.SqlSession;
 

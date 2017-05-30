@@ -7,9 +7,6 @@ import javax.ejb.EJBContext;
 import javax.ejb.Stateful;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.transaction.UserTransaction;
 
 import org.apache.ibatis.session.SqlSession;
 
@@ -17,7 +14,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import py.pol.una.ii.pw.model.Clientes;
-import py.pol.una.ii.pw.model.ComprasDetalles;
 import py.pol.una.ii.pw.model.Productos;
 import py.pol.una.ii.pw.model.VentasCabecera;
 import py.pol.una.ii.pw.model.VentasDetalles;
