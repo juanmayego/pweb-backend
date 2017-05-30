@@ -15,10 +15,10 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/3.3.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/3.3.9 http://maven.apache.org/maven-v3_3_9.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <name>EjbJaxRS</name>
-    <modelVersion>3.3.9</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
     <groupId>py.pol.una.ii.pw</groupId>
     <artifactId>EjbJaxRS</artifactId>
     <version>1.0-SNAPSHOT</version>
