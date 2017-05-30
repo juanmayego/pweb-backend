@@ -44,7 +44,7 @@ public class VentasCarritoRegistration {
     @Resource
     private EJBContext context;
 
-    private UserTransaction trx;
+    // private UserTransaction trx;
 
     private VentasCabecera instance;
     private List<VentasDetalles> detalles;
@@ -67,12 +67,12 @@ public class VentasCarritoRegistration {
     
     public void initVenta(VentasCabecera venta) throws Exception{
     	
-    	trx=context.getUserTransaction();
+    	// trx=context.getUserTransaction();
     	instance = venta;
     	instance.setFechaDocumento(new Date());
     	instance.setFechaCreacion(new Date());
     	instance.setFechaActualizacion(new Date());
-    	trx.begin();
+    	// trx.begin();
     	VentasCabeceraMapper ventasCabeceraMapper = sqlSession.getMapper(VentasCabeceraMapper.class);
     	ventasCabeceraMapper.insertVentaCabecera(instance);
     }
@@ -150,7 +150,7 @@ public class VentasCarritoRegistration {
         ventasCabeceraMapper.updateVentaCabecera(instance);
         sqlSession.commit();
         try {
-			trx.commit();
+			// trx.commit();
 		} catch (Exception e) {
 			
 			e.printStackTrace();
@@ -165,7 +165,7 @@ public class VentasCarritoRegistration {
     
     public void cancelar() throws Exception{
     	sqlSession.rollback();
-    	trx.rollback();
+    	// trx.rollback();
     }
     
     /*private void actualizarStock(){

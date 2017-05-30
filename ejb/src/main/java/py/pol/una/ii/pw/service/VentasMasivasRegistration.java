@@ -39,13 +39,13 @@ public class VentasMasivasRegistration {
 	private EJBContext context;
 
 	
-	private UserTransaction trx;
+	// private UserTransaction trx;
 	private SqlSession sqlSession;
 
 	public void initTransaction() throws Exception{
 		sqlSession = new MyBatisUtil().getSession();
-		trx=context.getUserTransaction();
-		trx.begin();
+		// trx=context.getUserTransaction();
+		// trx.begin();
 	}    
 
 	public String insertVentas(String venta) throws Exception{
@@ -96,13 +96,13 @@ public class VentasMasivasRegistration {
 	public void finishTransaction() throws Exception{
 		sqlSession.commit();
 		sqlSession.close();
-		trx.commit();
+		// trx.commit();
 	}
 
 	public void rollbackTransaction()throws Exception{
 		sqlSession.rollback();
 		sqlSession.close();
-		trx.rollback();
+		// trx.rollback();
 	}
 
 }
